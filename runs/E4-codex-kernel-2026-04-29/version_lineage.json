@@ -1,0 +1,8 @@
+{
+  "payload_version": "1.0.0",
+  "kernel_version": "codex-kernel-runner-1.0.0",
+  "repo_commit": "7eb623f8b870128e615ac6be9880e0265204b454",
+  "model_provider": "proxy_or_offline_emulator",
+  "model_version": "deterministic",
+  "resolved_at": "2026-04-30T20:23:14.612Z"
+}
