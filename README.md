@@ -2,6 +2,13 @@
 
 **SZL Holdings Public Trust Portal.** Publishes verifiable run artifacts from the Covenant Proof Standard (CPS) — the proof-chain emitted by every governed execution across the SZL Holdings platform.
 
+[![Thesis](https://img.shields.io/badge/thesis-v11%20published%20%C2%B7%20v12%20in%20review-805AD5?style=flat-square)](https://github.com/szl-holdings/ouroboros-thesis)
+[![Concept DOI](https://img.shields.io/badge/Concept%20DOI-10.5281%2Fzenodo.19944926-1f78b4?style=flat-square)](https://doi.org/10.5281/zenodo.19944926)
+[![Runtime](https://img.shields.io/badge/runtime-ouroboros%20v6.2.0%20·%20218%2F218-2DA44E?style=flat-square)](https://github.com/szl-holdings/ouroboros)
+[![Lean](https://img.shields.io/badge/Lean%204-kernel--verified-2D5BB9?style=flat-square&logo=lean&logoColor=white)](https://github.com/szl-holdings/lutar-lean)
+[![License](https://img.shields.io/badge/artifacts%20license-CC%20BY%204.0-blue?style=flat-square)](#license)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/szl-holdings/szl-trust/badge)](https://securityscorecards.dev/viewer/?uri=github.com/szl-holdings/szl-trust)
+
 ## What's here
 
 Each run produces 11 standardized JSON artifacts. The first reference run published here is **E4 Codex Kernel** (April 29, 2026), used as the canonical example for diligence reviewers.
@@ -82,6 +89,8 @@ Run artifacts: CC BY 4.0.
 
 ## Related
 
-- Platform repo: [szl-holdings/platform](https://github.com/szl-holdings/platform)
-- Engineering cookbook: [szl-holdings/szl-cookbook](https://github.com/szl-holdings/szl-cookbook)
-- Thesis (Zenodo concept DOI): [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926)
+- **Runtime**: [szl-holdings/ouroboros](https://github.com/szl-holdings/ouroboros) — the bounded-loop substrate that emits these receipts (Apache-2.0, 218/218 tests verified 2026-05-12)
+- **Proofs**: [szl-holdings/lutar-lean](https://github.com/szl-holdings/lutar-lean) — Lean 4 + Mathlib formal proofs of the Λ invariant uniqueness theorem (the kernel is the referee)
+- **Platform**: [szl-holdings/platform](https://github.com/szl-holdings/platform) (private) — 1,220 tests across 76 packages, MCP gateway 27/27 e2e, dual-witness diversity, reference-vector parity
+- **Cookbook**: [szl-holdings/szl-cookbook](https://github.com/szl-holdings/szl-cookbook) — 9 engineering skills (Anthropic skills pattern)
+- **Thesis**: [szl-holdings/ouroboros-thesis](https://github.com/szl-holdings/ouroboros-thesis) — v1→v11 published (concept DOI [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926)), v12 in review ([#25](https://github.com/szl-holdings/ouroboros-thesis/pull/25)), v13 in writing
