@@ -39,8 +39,8 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           for run in runs/*/; do
-            if [ ! -f "$run/manifest.json" ] && [ ! -f "$run/README.md" ]; then
-              echo "::error::run $run is missing manifest.json or README.md"
+            if [ ! -f "$run/run_manifest.json" ] && [ ! -f "$run/manifest.json" ] && [ ! -f "$run/README.md" ]; then
+              echo "::error::run $run is missing manifest file or README.md"
               exit 1
             fi
           done
