@@ -4,8 +4,8 @@
 
 [![Thesis](https://img.shields.io/badge/thesis-v11%20published%20%C2%B7%20v12%20in%20review-805AD5?style=flat-square)](https://github.com/szl-holdings/ouroboros-thesis)
 [![Concept DOI](https://img.shields.io/badge/Concept%20DOI-10.5281%2Fzenodo.19944926-1f78b4?style=flat-square)](https://doi.org/10.5281/zenodo.19944926)
-[![Runtime](https://img.shields.io/badge/runtime-ouroboros%20v6.2.0%20·%20218%2F218-2DA44E?style=flat-square)](https://github.com/szl-holdings/ouroboros)
-[![Lean](https://img.shields.io/badge/Lean%204-kernel--verified-2D5BB9?style=flat-square&logo=lean&logoColor=white)](https://github.com/szl-holdings/lutar-lean)
+[![Runtime](https://img.shields.io/badge/runtime-ouroboros%20v6.3.0%20·%20218%2F218-2DA44E?style=flat-square)](https://github.com/szl-holdings/ouroboros)
+[![Lean](https://img.shields.io/badge/Lean%204-kernel--verified-2D5BB9?style=flat-square&logo=lean&logoColor=white)](https://github.com/szl-holdings/lutar-lean) [![Runtime DOI](https://img.shields.io/badge/runtime%20DOI-10.5281%2Fzenodo.20162352-3b82f6?style=flat-square)](https://doi.org/10.5281/zenodo.20162352)
 [![License](https://img.shields.io/badge/artifacts%20license-CC%20BY%204.0-blue?style=flat-square)](#license)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/szl-holdings/szl-trust/badge)](https://securityscorecards.dev/viewer/?uri=github.com/szl-holdings/szl-trust)
 
