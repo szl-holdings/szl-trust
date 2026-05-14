@@ -1,22 +1,44 @@
 cff-version: 1.2.0
-message: "If you reference these artifacts, please cite as below."
+message: "If you use this software, please cite it using the metadata below."
+title: "szl-trust — SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts and deterministic replay infrastructure."
+abstract: >-
+  SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts and deterministic replay infrastructure. Part of the SZL Holdings governed AI decision infrastructure,
+  built on the Ouroboros Thesis (DOI 10.5281/zenodo.19944926).
 type: software
-title: "SZL Holdings Public Trust Portal: Covenant Proof Standard Reference Artifacts"
-abstract: "Public portal publishing verifiable run artifacts from the Covenant Proof Standard (CPS), the proof-chain emitted by every governed execution across the SZL Holdings platform."
+version: "1.0.0"
+date-released: "2026-01-01"
+license: CC-BY-4.0
 authors:
-  - family-names: "Lutar"
-    given-names: "Stephen P."
+  - family-names: Lutar
+    given-names: Stephen
+    name-particle: "P."
     name-suffix: "Jr."
-    orcid: "https://orcid.org/0009-0001-0110-4173"
     affiliation: "SZL Holdings"
     email: "stephen@szlholdings.com"
-repository-code: "https://github.com/szl-holdings/szl-trust"
+    orcid: "https://orcid.org/0009-0001-0110-4173"
 url: "https://github.com/szl-holdings/szl-trust"
-license: "CC-BY-4.0"
+repository-code: "https://github.com/szl-holdings/szl-trust"
 keywords:
-  - "audit"
-  - "proof-chain"
-  - "verifiable-runs"
-  - "covenant-proof-standard"
-  - "Lutar-invariant"
-date-released: 2026-05-13
+  - szl-holdings
+  - ai-governance
+  - ouroboros-thesis
+identifiers:
+  - description: "Ouroboros Thesis — research foundation (Zenodo concept DOI)"
+    type: doi
+    value: "10.5281/zenodo.19944926"
+  - description: "ORCID iD of the principal author"
+    type: other
+    value: "https://orcid.org/0009-0001-0110-4173"
+preferred-citation:
+  type: software
+  title: "szl-trust — SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts and deterministic replay infrastructure."
+  authors:
+    - family-names: Lutar
+      given-names: Stephen
+      name-particle: "P."
+      name-suffix: "Jr."
+      affiliation: "SZL Holdings"
+      email: "stephen@szlholdings.com"
+      orcid: "https://orcid.org/0009-0001-0110-4173"
+  year: 2026
+  url: "https://github.com/szl-holdings/szl-trust"

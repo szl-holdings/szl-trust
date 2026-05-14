@@ -8,6 +8,8 @@
 [![Lean](https://img.shields.io/badge/Lean%204-kernel--verified-2D5BB9?style=flat-square&logo=lean&logoColor=white)](https://github.com/szl-holdings/lutar-lean) [![Runtime DOI](https://img.shields.io/badge/runtime%20DOI-10.5281%2Fzenodo.20162352-3b82f6?style=flat-square)](https://doi.org/10.5281/zenodo.20162352)
 [![License](https://img.shields.io/badge/artifacts%20license-CC%20BY%204.0-blue?style=flat-square)](#license)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/szl-holdings/szl-trust/badge)](https://securityscorecards.dev/viewer/?uri=github.com/szl-holdings/szl-trust)
+[![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml)
 
 ## What's here
 
