@@ -5,8 +5,8 @@ title: "SZL Holdings Public Trust Portal: Covenant Proof Standard Reference Arti
 abstract: "Public portal publishing verifiable run artifacts from the Covenant Proof Standard (CPS), the proof-chain emitted by every governed execution across the SZL Holdings platform."
 authors:
   - family-names: "Lutar"
-    given-names: "Stephen P."
-    name-suffix: "Jr."
+    given-names: "Stephen"
+    name-particle: "P."
     orcid: "https://orcid.org/0009-0001-0110-4173"
     affiliation: "SZL Holdings"
     email: "stephen@szlholdings.com"
