@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+# © 2026 SZL Holdings · Author: Lutar, Stephen P. <stephen@szlholdings.com>
+#
+# Huklla T11 — DOI/Title consistency gate
+# Resolves Zenodo concept DOIs by following their canonical redirect to the
+# latest version record, then verifies title↔version consistency between the
+# README claim and the Zenodo metadata.
 name: huklla-t11-doi-title-gate
 on:
   push:
@@ -10,7 +17,7 @@ jobs:
   doi-title-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Extract DOIs from README
         id: extract
         run: |
@@ -23,12 +30,16 @@ jobs:
         run: |
           # DOI truth-table (postmortem T11 — zenodo.20173912=v13, zenodo.20173920=v12)
           # This gate prevents a repeat of the v12/v13 DOI swap incident.
+          # Concept DOIs (e.g. 19944926) redirect to their latest version record
+          # via Zenodo's API; we follow that redirect with -L (canonical Zenodo
+          # behavior) so concept-DOI references in README continue to resolve as
+          # they were designed to.
           fail=0
           while read id; do
             [ -z "$id" ] && continue
             echo "::group::Checking zenodo.$id"
 
-            # Step 1: Check doi.org resolves (HTTP 200-range)
+            # Step 1: Check doi.org resolves (HTTP 200-range, follow redirects)
             doi_status=$(curl -sS -o /dev/null -w "%{http_code}" \
               --max-time 15 --location \
               "https://doi.org/10.5281/zenodo.$id" 2>&1)
@@ -41,13 +52,23 @@ jobs:
             echo "doi.org status: $doi_status ✓"
 
             # Step 2: Fetch Zenodo API metadata
-            meta=$(curl -sS --max-time 15 "https://zenodo.org/api/records/$id")
+            #   -L  follow Zenodo's concept-DOI → version-record redirect
+            #   -H  request JSON explicitly so we get API JSON, not the HTML fallback
+            meta=$(curl -sSL --max-time 15 \
+                     -H "Accept: application/json" \
+                     "https://zenodo.org/api/records/$id")
             http_ok=$(echo "$meta" | jq -e '.id' > /dev/null 2>&1 && echo "yes" || echo "no")
             if [ "$http_ok" != "yes" ]; then
               echo "::error::DOI-API FAILURE: zenodo.$id — Zenodo API returned no record"
               fail=1
               echo "::endgroup::"
               continue
+            fi
+
+            # If we followed a concept-DOI redirect, note the resolved record id
+            resolved_id=$(echo "$meta" | jq -r '.id // "MISSING"')
+            if [ "$resolved_id" != "$id" ]; then
+              echo "  concept-DOI redirect: zenodo.$id → zenodo.$resolved_id ✓"
             fi
 
             title=$(echo "$meta" | jq -r '.metadata.title // "MISSING"')
