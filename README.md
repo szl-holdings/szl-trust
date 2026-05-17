@@ -93,4 +93,4 @@ Run artifacts: CC BY 4.0.
 - **Proofs**: [szl-holdings/lutar-lean](https://github.com/szl-holdings/lutar-lean) — Lean 4 + Mathlib formal proofs of the Λ invariant uniqueness theorem (the kernel is the referee)
 - **Platform**: [szl-holdings/platform](https://github.com/szl-holdings/platform) (private) — 1,220 tests across 76 packages, MCP gateway 27/27 e2e, dual-witness diversity, reference-vector parity
 - **Cookbook**: [szl-holdings/szl-cookbook](https://github.com/szl-holdings/szl-cookbook) — 9 engineering skills (Anthropic skills pattern)
-- **Thesis**: [szl-holdings/ouroboros-thesis](https://github.com/szl-holdings/ouroboros-thesis) — v1→v13 published (concept DOI [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926) → versioned DOI [10.5281/zenodo.20195368](https://doi.org/10.5281/zenodo.20195368))
+- **Thesis**: [szl-holdings/ouroboros-thesis](https://github.com/szl-holdings/ouroboros-thesis) — v13 published (all earlier versions superseded) (concept DOI [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926) → versioned DOI [10.5281/zenodo.20195368](https://doi.org/10.5281/zenodo.20195368))
