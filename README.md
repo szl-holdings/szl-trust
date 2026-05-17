@@ -2,7 +2,7 @@
 
 **SZL Holdings Public Trust Portal.** Publishes verifiable run artifacts from the Covenant Proof Standard (CPS) — the proof-chain emitted by every governed execution across the SZL Holdings platform.
 
-[![Thesis](https://img.shields.io/badge/thesis-v11%20published%20%C2%B7%20v12%20in%20review-805AD5?style=flat-square)](https://github.com/szl-holdings/ouroboros-thesis)
+[![Thesis](https://img.shields.io/badge/thesis-v13%20published-805AD5?style=flat-square)](https://github.com/szl-holdings/ouroboros-thesis)
 [![Concept DOI](https://img.shields.io/badge/Concept%20DOI-10.5281%2Fzenodo.19944926-1f78b4?style=flat-square)](https://doi.org/10.5281/zenodo.19944926)
 [![Runtime](https://img.shields.io/badge/runtime-ouroboros%20v6.3.0%20·%20218%2F218-2DA44E?style=flat-square)](https://github.com/szl-holdings/ouroboros)
 [![Lean](https://img.shields.io/badge/Lean%204-kernel--verified-2D5BB9?style=flat-square&logo=lean&logoColor=white)](https://github.com/szl-holdings/lutar-lean) [![Runtime DOI](https://img.shields.io/badge/runtime%20DOI-10.5281%2Fzenodo.20162352-3b82f6?style=flat-square)](https://doi.org/10.5281/zenodo.20162352)
@@ -93,4 +93,4 @@ Run artifacts: CC BY 4.0.
 - **Proofs**: [szl-holdings/lutar-lean](https://github.com/szl-holdings/lutar-lean) — Lean 4 + Mathlib formal proofs of the Λ invariant uniqueness theorem (the kernel is the referee)
 - **Platform**: [szl-holdings/platform](https://github.com/szl-holdings/platform) (private) — 1,220 tests across 76 packages, MCP gateway 27/27 e2e, dual-witness diversity, reference-vector parity
 - **Cookbook**: [szl-holdings/szl-cookbook](https://github.com/szl-holdings/szl-cookbook) — 9 engineering skills (Anthropic skills pattern)
-- **Thesis**: [szl-holdings/ouroboros-thesis](https://github.com/szl-holdings/ouroboros-thesis) — v1→v11 published (concept DOI [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926)), v12 in review ([#25](https://github.com/szl-holdings/ouroboros-thesis/pull/25)), v13 in writing
+- **Thesis**: [szl-holdings/ouroboros-thesis](https://github.com/szl-holdings/ouroboros-thesis) — v1→v13 published (concept DOI [10.5281/zenodo.19944926](https://doi.org/10.5281/zenodo.19944926) → versioned DOI [10.5281/zenodo.20195368](https://doi.org/10.5281/zenodo.20195368))
