@@ -1,24 +1,11 @@
-cff-version: 1.2.0
-message: "If you reference these artifacts, please cite as below."
-type: software
-title: "SZL Holdings Public Trust Portal: Covenant Proof Standard Reference Artifacts"
-abstract: "Public portal publishing verifiable run artifacts from the Covenant Proof Standard (CPS), the proof-chain emitted by every governed execution across the SZL Holdings platform."
-authors:
-  - family-names: "Lutar"
-    given-names: "Stephen P."
-    name-suffix: "Jr."
 
-    email: stephen@szlholdings.com
-    orcid: "https://orcid.org/0009-0001-0110-4173"
-    affiliation: "SZL Holdings"
-    email: "stephen@szlholdings.com"
-repository-code: "https://github.com/szl-holdings/szl-trust"
-url: "https://github.com/szl-holdings/szl-trust"
-license: "CC-BY-4.0"
-keywords:
-  - "audit"
-  - "proof-chain"
-  - "verifiable-runs"
-  - "covenant-proof-standard"
-  - "Lutar-invariant"
-date-released: 2026-05-13
+identifiers:
+  - description: "Ouroboros Thesis v18.0 — Multi-track Substrate Expansion (Zenodo)"
+    type: doi
+    value: "10.5281/zenodo.20434276"
+  - description: "Ouroboros Thesis concept DOI — always-latest"
+    type: doi
+    value: "10.5281/zenodo.19944926"
+  - description: "ORCID iD of the principal author"
+    type: other
+    value: "https://orcid.org/0009-0001-0110-4173"
