@@ -1,9 +1,31 @@
-
+cff-version: 1.2.0
+message: "If you use these governance receipts in research, please cite as follows."
+title: "szl-trust — SZL Holdings Public Trust Portal"
+version: "0.1.0"
+date-released: "2026-05-29"
+abstract: >-
+  Public transparency repository for SZL Holdings' Covenant Proof Standard (CPS)
+  run artifacts — cryptographically verifiable governance receipts from the
+  Ouroboros runtime. Reference execution: E4 Codex Kernel, 12 receipts (mocked:false).
+type: software
+authors:
+  - family-names: Lutar
+    given-names: "Stephen P."
+    name-suffix: "Jr."
+    email: stephen@szlholdings.com
+    affiliation: SZL Holdings
+    orcid: "https://orcid.org/0009-0001-0110-4173"
 license: CC-BY-4.0
+url: "https://github.com/szl-holdings/szl-trust"
+repository-code: "https://github.com/szl-holdings/szl-trust"
+keywords:
+  - szl-holdings
+  - ai-governance
+  - proof-chain
+  - covenant-proof-standard
+  - audit-trail
+  - governance-receipts
 identifiers:
-  - description: "Ouroboros Thesis v18.0 — Multi-track Substrate Expansion (Zenodo)"
-    type: doi
-    value: "10.5281/zenodo.20434276"
   - description: "Ouroboros Thesis concept DOI — always-latest"
     type: doi
     value: "10.5281/zenodo.19944926"
