@@ -9,6 +9,15 @@ SZL Holdings Public Trust Portal — Covenant Proof Standard (CPS) run artifacts
 
 ---
 
+## On Hugging Face
+
+This repository's dataset mirror and org showcase live on the [SZLHOLDINGS Hugging Face org](https://huggingface.co/SZLHOLDINGS):
+
+| Surface | Hugging Face artifact |
+|---------|---------------------|
+| **Source mirror** | [szl-trust-source](https://huggingface.co/datasets/SZLHOLDINGS/szl-trust-source) |
+| **Org showcase** | [SZLHOLDINGS on Hugging Face](https://huggingface.co/SZLHOLDINGS) — 22 datasets · 19+ Spaces · 2 models |
+
 ## Overview
 
 **szl-trust** is the public transparency layer of the SZL Holdings governed AI platform. It publishes Covenant Proof Standard (CPS) run artifacts — cryptographically verifiable governance receipts — enabling external auditors, partners, and regulators to verify that AI decisions were made within approved policy bounds.
