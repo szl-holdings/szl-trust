@@ -22,7 +22,7 @@ This repository's dataset mirror and org showcase live on the [SZLHOLDINGS Huggi
 | Surface | Hugging Face artifact |
 |---------|---------------------|
 | **Source mirror** | [szl-trust-source](https://huggingface.co/datasets/SZLHOLDINGS/szl-trust-source) |
-| **Org showcase** | [SZLHOLDINGS on Hugging Face](https://huggingface.co/SZLHOLDINGS) — 22 datasets · 19+ Spaces · 2 models |
+| **Org showcase** | [SZLHOLDINGS on Hugging Face](https://huggingface.co/SZLHOLDINGS) — 24 datasets · 19+ Spaces · 2 models |
 
 ## Overview
 
