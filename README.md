@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE)
 [![Series-A Engineering](https://img.shields.io/badge/Series--A-Engineering-28251D?style=flat-square)](https://github.com/szl-holdings)
-[![Doctrine v6](https://img.shields.io/badge/Doctrine-v6-01696F?style=flat-square)](https://github.com/szl-holdings/platform/blob/main/docs/doctrine/szl-doctrine.md)
+[![Doctrine v7](https://img.shields.io/badge/Doctrine-v7-7c5cff?style=flat-square)](https://github.com/szl-holdings/platform/blob/main/docs/doctrine/szl-doctrine.md)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19944926-805AD5?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.19944926)
 [![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml)
@@ -97,7 +97,7 @@ This repository accepts no external contributions — it is a read-only audit ar
 
 ## What szl-trust Is NOT
 
-Doctrine v6 honest scoping:
+Doctrine v7 honest scoping:
 
 - **Not a live execution system.** szl-trust is a read-only audit artifact registry — it publishes receipts, it does not execute AI decisions.
 - **Not independently sufficient for trust.** Receipts must be verified against the Ouroboros runtime and Covenant Policy Engine; this repo does not ship the verifier.
