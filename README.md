@@ -6,6 +6,8 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19944926-805AD5?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.19944926)
 [![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml)
+[![GHAS Code Security](https://img.shields.io/badge/GHAS-Code_Security-2DA44E.svg?style=flat-square&logo=github)](https://github.com/szl-holdings/szl-trust/security/code-scanning)
+[![Secret Protection](https://img.shields.io/badge/GHAS-Secret_Protection-2DA44E.svg?style=flat-square&logo=github)](https://github.com/szl-holdings/szl-trust/security/secret-scanning)
 [![SBOM](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml)
 [![DCO](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/szl-holdings/szl-trust/badge)](https://securityscorecards.dev/viewer/?uri=github.com/szl-holdings/szl-trust)
@@ -101,4 +103,3 @@ Doctrine v6 honest scoping:
 - **Not independently sufficient for trust.** Receipts must be verified against the Ouroboros runtime and Covenant Policy Engine; this repo does not ship the verifier.
 - **Not a general-purpose blockchain ledger.** Receipts are JSON artifacts anchored by Merkle roots; Cardano anchoring (via amaru) is separate.
 - **Not accepting external contributions.** This is a founder-governed transparency artifact — no external PRs.
-
