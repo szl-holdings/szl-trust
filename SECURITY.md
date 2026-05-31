@@ -1,19 +1,12 @@
 # Security Policy
 
-## Supported Versions
+## Trust Tier
 
-Security updates are issued for the latest minor release on the default branch. Prior versions are not supported.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| latest  | :white_check_mark: |
-| older   | :x:                |
+**Trust Tier 1** — SZL Holdings is committed to coordinated, responsible disclosure for all SZL Holdings repositories.
 
 ## Reporting a Vulnerability
 
-We take security seriously. If you discover a vulnerability, please report it privately so we can investigate and remediate before public disclosure.
-
-**Preferred channel:** [security@szlholdings.com](mailto:security@szlholdings.com)
+Please report security vulnerabilities to: **security@szlholdings.com**
 
 **Alternate channel:** [Open a private security advisory](https://github.com/szl-holdings/.github/security/advisories/new) on GitHub.
 
@@ -26,27 +19,42 @@ Please include:
 
 ## Disclosure Process
 
-1. We acknowledge receipt within **2 business days**.
-2. We assess severity using CVSS v3.1 and triage within **5 business days**.
-3. We work on a fix and coordinate a release window with you.
-4. We publish a security advisory and credit the reporter at their request.
+We commit to:
+- Acknowledging your report within **72 hours**
+- Providing an initial assessment within **7 days**
+- Disclosing the resolution within **90 days** of report (industry-standard coordinated-disclosure window)
 
 We ask that you give us a reasonable opportunity to investigate and patch before public disclosure. We do not pursue legal action against good-faith security research.
 
+## Supported Versions
+
+| Version | Supported |
+|---------|-----------|
+| Current main | ✅ |
+| Tagged releases (last 90 days) | ✅ |
+| Older tagged releases | Best effort |
+
 ## Scope
+
+This policy covers all software published under `szl-holdings/*`. For the upstream Defense Unicorns ecosystem we contribute to (Iron Bank, UDS, Pepr, Zarf), please follow their respective security policies.
 
 In scope:
 
-- Source code, container images, and infrastructure-as-code in this repository.
-- Authentication, authorization, data handling, and cryptographic implementations.
-- Supply-chain risks affecting build artifacts produced from this repository.
+- Source code in this repository
+- Released artifacts (packages, Docker images, Lean builds)
+- CI/CD pipelines producing signed attestations
 
 Out of scope:
 
-- Third-party dependencies (please report upstream).
-- Social engineering, physical attacks, or denial-of-service against shared infrastructure.
-- Findings that require physical access to a user's device.
+- Third-party services integrated with SZL products (report to those vendors)
+- Issues already publicly known or previously reported
+
+## Governance
+
+All security disclosures are governed by **SZL Doctrine v7**: no fake security claims, STAGED-ADVISORY label for gates not yet machine-checked, DSSE receipts on every governance decision.
 
 ## Hall of Thanks
 
-Researchers who responsibly disclose vulnerabilities will be acknowledged here.
+Security researchers who responsibly disclose issues will be credited here (with permission).
+
+Source: https://github.com/szl-holdings/.github
