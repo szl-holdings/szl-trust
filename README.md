@@ -7,7 +7,9 @@
 
 **Trust runtime with hash-chained proof ledgers from real production runs.**
 
-[![Doctrine v11](https://img.shields.io/badge/Doctrine-v11-3b82f6?style=flat-square)](https://github.com/szl-holdings/.github/blob/main/DOCTRINE_V11.md) [![License: CC-BY-4.0](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE) [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19944926-805AD5?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.19944926)
+[![Doctrine v11](https://img.shields.io/badge/Doctrine-v11-3b82f6?style=flat-square)](https://github.com/szl-holdings/.github/blob/main/DOCTRINE_V11.md) [![License: CC-BY-4.0](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE)
+
+[![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-805AD5?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276)
 
 [![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml) [![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml) [![SBOM](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml) [![DCO](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/szl-holdings/szl-trust/badge)](https://securityscorecards.dev/viewer/?uri=github.com/szl-holdings/szl-trust) [![GHAS](https://img.shields.io/badge/GHAS-Code_Security-2DA44E.svg?style=flat-square&logo=github)](https://github.com/szl-holdings/szl-trust/security/code-scanning) [![ORCID](https://img.shields.io/badge/ORCID-0009--0001--0110--4173-A6CE39.svg?style=flat-square&logo=orcid&logoColor=white)](https://orcid.org/0009-0001-0110-4173)
 
