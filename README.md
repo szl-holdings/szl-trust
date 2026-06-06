@@ -72,7 +72,7 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 
 - **Not a live execution system.** Read-only audit artifact registry — publishes receipts, does not execute AI decisions.
 - **Not independently sufficient for trust.** Receipts should be verified against the Ouroboros runtime.
-- **Not a general-purpose blockchain ledger.** JSON artifacts anchored by Merkle roots; Cardano anchoring (via amaru) is separate.
+- **Not a general-purpose blockchain ledger.** JSON artifacts anchored by Merkle roots; Cardano anchoring (via the receipt-minting layer) is separate.
 - **SLSA L1 honest** — provenance generated; **L2/L3 not claimed**.
 - **Λ-uniqueness = Conjecture 1** (not a theorem).
 - No FedRAMP / Iron Bank / CMMC claims.
