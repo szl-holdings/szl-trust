@@ -24,7 +24,7 @@ evidence chains for external auditability.
 It publishes Covenant Proof Standard (CPS) run artifacts — hash-chained, cryptographically
 verifiable governance receipts from real production executions. The canonical reference run
 is the **E4 Codex Kernel (2026-04-29)**: 12 receipts, all `mocked:false`, 12 proof ledger
-steps, 31 span IDs in `trace.jsonl`, with a `deployment_contract.json` anchoring the full
+steps, 12 trace spans in `trace.jsonl` (all validators PASS), with a `deployment_contract.json` anchoring the full
 run to a specific `repo_commit`.
 
 External auditors, partners, and regulators can verify every decision without SZL tooling.
