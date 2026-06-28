@@ -100,3 +100,38 @@ Security disclosures: [security@szlholdings.com](mailto:security@szlholdings.com
 *Doctrine v11 LOCKED · 749/14/163 · kernel c7c0ba17 · Λ = Conjecture 1 · SLSA L1 honest*
 
 Signed-off-by: stephenlutar2-hash <stephenlutar2@gmail.com>
+
+## One-click buyer verification
+
+Run `verify.sh` to verify a receipt from this repo in under 30 seconds — no SZL tooling required:
+
+```bash
+# Clone and run
+git clone https://github.com/szl-holdings/szl-trust
+cd szl-trust
+chmod +x verify.sh
+./verify.sh
+```
+
+The script:
+1. Fetches the org cosign public key from [szl-lake](https://huggingface.co/datasets/SZLHOLDINGS/szl-lake)
+2. Fetches `decision_receipt.json` from the E4 run in this repo
+3. Confirms `mocked:false` (real production run)
+4. Recomputes SHA-256 of the decoded payload
+5. Attempts ECDSA-P256 DSSE signature verification against the cosign public key
+6. Checks [lean-kernel](https://huggingface.co/spaces/SZLHOLDINGS/lean-kernel) liveness
+
+Expected output: `✓  VERIFIED — receipt is a real production run (mocked:false)`
+
+**Honest limits:** DSSE signing is `PLACEHOLDER` when `HATUN_MCP_SIGNING_KEY` is unset at
+runtime — the receipt will say so honestly (never fabricates a signature). Trust ceiling = 0.97
+(never 1.0 by doctrine). Λ = Conjecture 1 (advisory, not a theorem).
+
+To verify the DSSE sig with cosign directly:
+```bash
+cosign verify-blob \
+  --key /tmp/szl_cosign.pub \
+  --bundle runs/E4-codex-kernel-2026-04-29/cosign-bundle.json \
+  runs/E4-codex-kernel-2026-04-29/decision_receipt.json
+```
+
