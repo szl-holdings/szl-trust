@@ -65,10 +65,17 @@ jobs:
               continue
             fi
 
-            # If we followed a concept-DOI redirect, note the resolved record id
+            # If we followed a concept-DOI redirect, note the resolved record id.
+            # A concept DOI is Zenodo's "always-latest" pointer: resolving it with -L
+            # redirects to the newest version record, so resolved_id differs from the
+            # concept id. Such a DOI has NO pinned version (its title tracks whatever
+            # the latest release is), so the README must NOT be version-cross-checked
+            # against it — only version-specific DOIs (resolved_id == id) are.
             resolved_id=$(echo "$meta" | jq -r '.id // "MISSING"')
+            is_concept=0
             if [ "$resolved_id" != "$id" ]; then
-              echo "  concept-DOI redirect: zenodo.$id → zenodo.$resolved_id ✓"
+              is_concept=1
+              echo "  concept-DOI redirect: zenodo.$id → zenodo.$resolved_id (always-latest — version cross-check skipped) ✓"
             fi
 
             title=$(echo "$meta" | jq -r '.metadata.title // "MISSING"')
@@ -94,25 +101,31 @@ jobs:
               fi
             fi
 
-            # Step 4: Cross-check README version claim vs Zenodo title
-            # Look for lines that reference this DOI and extract claimed version
-            readme_claim=$(grep -oE "(v[0-9]+(\.[0-9]+)*)[^|]*zenodo\.$id|zenodo\.$id[^|]*(v[0-9]+(\.[0-9]+)*)" README.md \
-              | grep -oE "v[0-9]+(\.[0-9]+)*" | head -1)
-            if [ -z "$readme_claim" ]; then
-              # Try badge-style: DOI vNN ... zenodo.NNNN
-              readme_claim=$(grep "$id" README.md | grep -oE "v[0-9]+(\.[0-9]+)*" | head -1)
-            fi
-
-            if [ -n "$readme_claim" ] && [ -n "$tver" ]; then
-              if [ "$readme_claim" != "$tver" ]; then
-                echo "::error::DOI-TITLE MISMATCH: zenodo.$id — README claims $readme_claim but Zenodo title says $tver"
-                fail=1
-              else
-                echo "  README↔Zenodo version match: $readme_claim ✓"
+            # Step 4: Cross-check README version claim vs Zenodo title.
+            # Concept DOIs are always-latest and carry no pinned version, so this
+            # cross-check applies only to version-specific DOIs (see is_concept above).
+            if [ "$is_concept" = "1" ]; then
+              echo "  concept DOI — README carries no version claim to cross-check (by design) ✓"
+            else
+              # Look for lines that reference this DOI and extract claimed version
+              readme_claim=$(grep -oE "(v[0-9]+(\.[0-9]+)*)[^|]*zenodo\.$id|zenodo\.$id[^|]*(v[0-9]+(\.[0-9]+)*)" README.md \
+                | grep -oE "v[0-9]+(\.[0-9]+)*" | head -1)
+              if [ -z "$readme_claim" ]; then
+                # Try badge-style: DOI vNN ... zenodo.NNNN
+                readme_claim=$(grep "$id" README.md | grep -oE "v[0-9]+(\.[0-9]+)*" | head -1)
               fi
-            elif [ -n "$readme_claim" ] && [ -z "$tver" ]; then
-              echo "  README claims $readme_claim; Zenodo title has no version token — manual review advised"
-              echo "::warning::NO-VERSION-TOKEN: zenodo.$id — README claims $readme_claim but title '$title' has no parseable version"
+
+              if [ -n "$readme_claim" ] && [ -n "$tver" ]; then
+                if [ "$readme_claim" != "$tver" ]; then
+                  echo "::error::DOI-TITLE MISMATCH: zenodo.$id — README claims $readme_claim but Zenodo title says $tver"
+                  fail=1
+                else
+                  echo "  README↔Zenodo version match: $readme_claim ✓"
+                fi
+              elif [ -n "$readme_claim" ] && [ -z "$tver" ]; then
+                echo "  README claims $readme_claim; Zenodo title has no version token — manual review advised"
+                echo "::warning::NO-VERSION-TOKEN: zenodo.$id — README claims $readme_claim but title '$title' has no parseable version"
+              fi
             fi
 
             echo "::endgroup::"
