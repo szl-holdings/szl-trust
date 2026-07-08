@@ -1,3 +1,5 @@
+> **SZL Holdings** · Doctrine v11 · Λ = Conjecture 1 (advisory, never "green"/theorem) · canonical [a-11-oy.com](https://a-11-oy.com)
+
 # szl-trust
 
 > ⚠️ **DEPRECATED — migrated to [`szl-holdings/docs-site`](https://github.com/szl-holdings/docs-site/tree/main/docs/trust) (published at `docs.szlholdings.com`).** The trust docs + E4 Codex Kernel run artifacts now live under `docs/trust/`. This repo is **deprecated but NOT archived** — archival is a later founder step. See [`DEPRECATED.md`](./DEPRECATED.md).
