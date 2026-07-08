@@ -70,3 +70,16 @@ jobs:
             python3 -m json.tool "$f" > /dev/null || { echo "::error file=$f::Invalid JSON"; exit 1; }
           done
           echo "Validated $found JSON files."
+
+  chain-integrity:
+    name: Offline chain-integrity verifier
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Verify every published run is internally consistent (fail-closed)
+        run: python3 scripts/verify_chain.py
+      - name: Adversarial fail-closed tests (stdlib unittest, no external deps)
+        run: python3 -m unittest discover -s tests -v

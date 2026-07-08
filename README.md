@@ -140,3 +140,27 @@ cosign verify-blob \
   runs/E4-codex-kernel-2026-04-29/decision_receipt.json
 ```
 
+## Offline chain-integrity check (no network, no SZL tooling)
+
+`scripts/verify_chain.py` verifies the **internal consistency** of a published
+run entirely offline (Python 3 standard library only — no deps, no network):
+
+```bash
+python3 scripts/verify_chain.py            # verify every run under runs/
+python3 scripts/verify_chain.py runs/E4-codex-kernel-2026-04-29
+```
+
+It is **fail-closed**: a malformed / truncated JSON record, a step gap or
+reorder, a broken hash-chain link, a ledger↔trace state-binding mismatch, a
+receipt-id disagreement, a non-boolean `mocked` posture, or a manifest anchor
+that does not match the final ledger state each cause a non-zero exit — nothing
+is silently skipped. The adversarial suite in `tests/test_verify_chain.py`
+(run: `python3 -m unittest discover -s tests`) mutates a copy of the real E4
+artifacts and asserts every such tampering is rejected.
+
+**Honest scope:** this is **advisory tamper-evidence** — it shows the published
+artifacts are self-consistent (any edit to one record breaks a cross-referenced
+invariant), **not** a proof of authenticity. It does not assert the state hashes
+were produced by a trusted signer and never fabricates a signature. Λ =
+Conjecture 1 (advisory). Trust ceiling 0.97 — never 1.0 by doctrine.
+
