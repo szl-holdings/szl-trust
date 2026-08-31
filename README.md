@@ -7,7 +7,7 @@
 
 **SZL Holdings Public Trust Portal** · Doctrine v11 LOCKED (749 / 14 / 163) · CC-BY-4.0
 
-[![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml) [![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml) [![SBOM](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml) [![DCO](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/dco.yml)
+[![CI](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/ci.yml) [![CodeQL](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/codeql.yml) [![SBOM](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/szl-holdings/szl-trust/actions/workflows/sbom.yml)
 
 [![Doctrine v11](https://img.shields.io/badge/Doctrine-v11_LOCKED-3b82f6?style=flat-square)](https://github.com/szl-holdings/.github/tree/main/doctrine) [![SLSA](https://img.shields.io/badge/SLSA-L1_honest-eab308?style=flat-square)](https://slsa.dev/spec/v1.0/levels) [![License: CC-BY-4.0](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE)
 
