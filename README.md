@@ -124,7 +124,7 @@ The script:
 3. Confirms `mocked:false` (real production run)
 4. Recomputes SHA-256 of the decoded payload
 5. Attempts ECDSA-P256 DSSE signature verification against the cosign public key
-6. Checks [lean-kernel](https://huggingface.co/spaces/SZLHOLDINGS/lean-kernel) liveness
+6. Probes Lean-kernel liveness against the ROADMAP HF Space `SZLHOLDINGS/lean-kernel` (not yet deployed — the probe reports unreachable and is non-fatal). Live governed-kernel artifacts: [SZLHOLDINGS/szl-kernels](https://huggingface.co/SZLHOLDINGS/szl-kernels)
 
 Expected output: `✓  VERIFIED — receipt is a real production run (mocked:false)`
 
