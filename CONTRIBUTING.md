@@ -37,15 +37,6 @@
   
 ---
 
-## Developer Certificate of Origin (DCO)
-
-All commits must carry a Developer Certificate of Origin sign-off per [DCO v1.1](https://developercertificate.org/). Add with:
-
-```bash
-git commit -s -m "your commit message"
-# Produces: Signed-off-by: Name <email>
-```
-
 ### Branch naming convention
 
 ```
