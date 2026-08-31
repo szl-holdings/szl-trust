@@ -16,7 +16,7 @@ and the layered verification paths available to a sophisticated external reviewe
 2. **Receipt fetch** from `szl-trust` (GitHub raw)
 3. **`mocked:false` confirmation** — real production run, not synthetic
 4. **SHA-256 payload integrity** — receipt content hash recomputed
-5. **Lean kernel liveness** — HF Space `lean-kernel` `/healthz` endpoint
+5. **Lean kernel liveness** — HF Space `SZLHOLDINGS/lean-kernel` `/healthz` endpoint (**ROADMAP — not yet deployed**; the probe is non-fatal when unreachable). Live governed-kernel artifacts: `SZLHOLDINGS/szl-kernels` (HF)
 
 This is the **Layer 1** buyer verification: "is this a real, non-fabricated run?"
 
