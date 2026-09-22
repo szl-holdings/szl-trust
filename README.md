@@ -13,8 +13,7 @@ Product: [a-11-oy.com](https://a-11-oy.com) ·
 Proof: [a11oy.net](https://a11oy.net)
 <!-- /szl:header -->
 
-> ⚠️ **DEPRECATED — migrated to [`szl-holdings/docs-site`](https://github.com/szl-holdings/docs-site/tree/main/docs/trust) (published at `docs.szlholdings.com`).** The trust docs + E4 Codex Kernel run artifacts now live under `docs/trust/`. This repo is **deprecated but NOT archived** — archival is a later founder step. See [`DEPRECATED.md`](./DEPRECATED.md).
-
+> **STATUS — ACTIVE HISTORICAL PROOF REGISTRY.** This repository remains the source-of-record for the published trust run artifacts and their offline verification helpers stored here. The former `docs-site` consolidation target is now an archived mirror whose repository metadata points to [`a11oy-net`](https://github.com/szl-holdings/a11oy-net) as the canonical proof-site source. The public proof surface is [a11oy.net](https://a11oy.net). See [`DEPRECATED.md`](./DEPRECATED.md) for the superseded consolidation history; it is not current deprecation authority for this repository.
 
 **SZL Holdings Public Trust Portal** · Doctrine v11 LOCKED (749 / 14 / 163) · CC-BY-4.0
 
@@ -24,9 +23,7 @@ Proof: [a11oy.net](https://a11oy.net)
 
 [![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-5b8dee?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276) [![DOI Concept (always-latest)](https://zenodo.org/badge/DOI/10.5281/zenodo.19944926.svg)](https://doi.org/10.5281/zenodo.19944926)
 
-> **Note (2026-06-03):** Contents are mirrored in
-> [`docs-site/trust/`](https://github.com/szl-holdings/docs-site/tree/main/trust).
-> This repo is the canonical, version-controlled home for trust run artifacts.
+> **Source-of-truth note (2026-09-22):** The June `docs-site` copy is historical. `szl-trust` owns the published historical artifact bytes and verification material in this repository; `a11oy-net` owns the current proof-site source and deployment evidence for `a11oy.net`. A copied or archived mirror does not establish current runtime alignment.
 
 ---
 
@@ -100,7 +97,8 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 | [ouroboros](https://github.com/szl-holdings/ouroboros) | Runtime that generates the receipts |
 | [lutar-lean](https://github.com/szl-holdings/lutar-lean) | Lean 4 proofs — 749 decls / 14 unique axioms (15 raw, 1 dup) / 163 sorries @ c7c0ba17 |
 | [a11oy](https://github.com/szl-holdings/a11oy) | Flagship governance app |
-| [docs-site/trust/](https://github.com/szl-holdings/docs-site/tree/main/trust) | Mirror (docs) |
+| [a11oy-net](https://github.com/szl-holdings/a11oy-net) | Current proof-site source and deployment evidence for `a11oy.net` |
+| [docs-site](https://github.com/szl-holdings/docs-site) | Archived historical documentation mirror; not current proof authority |
 
 ## Citation
 
@@ -174,4 +172,3 @@ artifacts are self-consistent (any edit to one record breaks a cross-referenced
 invariant), **not** a proof of authenticity. It does not assert the state hashes
 were produced by a trusted signer and never fabricates a signature. Λ =
 Conjecture 1 (advisory). Trust ceiling 0.97 — never 1.0 by doctrine.
-
