@@ -12,7 +12,8 @@ class RepositoryStatusTests(unittest.TestCase):
 
         self.assertIn("ACTIVE HISTORICAL PROOF REGISTRY", readme)
         self.assertIn("a11oy-net", readme)
-        self.assertIn("archived historical documentation mirror", readme)
+        self.assertIn("archived mirror", readme)
+        self.assertIn("Archived historical documentation mirror", readme)
         self.assertNotIn("DEPRECATED — migrated to", readme)
 
         self.assertIn("Historical consolidation note — superseded", history)
