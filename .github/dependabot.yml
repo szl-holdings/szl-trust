@@ -8,10 +8,35 @@ updates:
     groups:
       github-codeql-action:
         patterns:
-          - "github/codeql-action*"
+        - github/codeql-action*
+        update-types:
+        - minor
+        - patch
+        exclude-patterns:
+        - torch*
+        - transformers
+        - accelerate
+        - vllm
+        - unsloth*
+        - openai
+      szl-minor-patch:
+        patterns:
+        - '*'
+        update-types:
+        - minor
+        - patch
+        exclude-patterns:
+        - torch*
+        - transformers
+        - accelerate
+        - vllm
+        - unsloth*
+        - openai
     labels:
       - "dependencies"
       - "github-actions"
     commit-message:
       prefix: "chore(ci)"
       include: "scope"
+    cooldown:
+      default-days: 3
