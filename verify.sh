@@ -75,7 +75,7 @@ RECEIPT_JSON=$(curl -fsSL \
 MOCKED=$(echo "$RECEIPT_JSON" | jq -r '.mocked // .last_receipt.mocked // "unknown"')
 echo "      Receipt JSON fetched — mocked field: $MOCKED"
 if [ "$MOCKED" = "false" ]; then
-    echo "      ✓ mocked:false confirmed (LIVE run, not synthetic)"
+    echo "      ✓ mocked:false confirmed (flag set by the run producer)"
 else
     echo "      ✗ FAIL: mocked=$MOCKED (expected false)"
     exit 1
@@ -170,7 +170,7 @@ echo "  DSSE sig     : $SIG_RESULT"
 echo "  Lean kernel  : $LEAN_STATUS"
 echo ""
 if [ "$MOCKED" = "false" ]; then
-    echo "  ✓  VERIFIED — receipt is a real (non-mocked) experiment run (mocked:false)"
+    echo "  ✓  VERIFIED — receipt is flagged mocked:false by its producer"
     echo "     For full cosign bundle verification:"
     echo "     cosign verify-blob --key /tmp/szl_cosign.pub --bundle <bundle.json> <payload>"
 else
