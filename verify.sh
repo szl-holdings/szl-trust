@@ -170,7 +170,7 @@ echo "  DSSE sig     : $SIG_RESULT"
 echo "  Lean kernel  : $LEAN_STATUS"
 echo ""
 if [ "$MOCKED" = "false" ]; then
-    echo "  ✓  VERIFIED — receipt is a real production run (mocked:false)"
+    echo "  ✓  VERIFIED — receipt is a real (non-mocked) experiment run (mocked:false)"
     echo "     For full cosign bundle verification:"
     echo "     cosign verify-blob --key /tmp/szl_cosign.pub --bundle <bundle.json> <payload>"
 else
