@@ -28,17 +28,20 @@ Proof: [a11oy.net](https://a11oy.net)
 ---
 
 A measurable governance operator on the receipt-bus σ-algebra of agentic AI — publishing
-Covenant Proof Standard run artifacts from real production executions with `mocked:false`
-evidence chains for external auditability.
+Covenant Proof Standard run artifacts from experiment executions that the run producer flagged
+`mocked:false`, with evidence chains for external auditability.
 
 ## What this is
 
 **szl-trust** is the public transparency layer of the SZL Holdings governed AI platform.
 It publishes Covenant Proof Standard (CPS) run artifacts — hash-chained, cryptographically
-verifiable governance receipts from real production executions. The canonical reference run
+verifiable governance receipts from experiment executions flagged `mocked:false` by the run
+producer. The canonical reference run
 is the **E4 Codex Kernel (2026-04-29)**: 12 receipts, all `mocked:false`, 12 proof ledger
 steps, 12 trace spans in `trace.jsonl` (all validators PASS), with a `deployment_contract.json` anchoring the full
-run to a specific `repo_commit`.
+run to a specific `repo_commit`. `mocked:false` is a flag the producer sets; on its own it does
+not show how the run was executed. The run's `version_lineage.json` records
+`model_provider: proxy_or_offline_emulator` and `model_version: deterministic`.
 
 External auditors, partners, and regulators can verify every decision without SZL tooling.
 
@@ -130,12 +133,12 @@ chmod +x verify.sh
 The script:
 1. Fetches the org cosign public key from [szl-lake](https://huggingface.co/datasets/SZLHOLDINGS/szl-lake)
 2. Fetches `decision_receipt.json` from the E4 run in this repo
-3. Confirms `mocked:false` (real production run)
+3. Confirms the receipt carries `mocked:false` (a flag set by the run producer)
 4. Recomputes SHA-256 of the decoded payload
 5. Attempts ECDSA-P256 DSSE signature verification against the cosign public key
 6. Probes Lean-kernel liveness against the ROADMAP HF Space `SZLHOLDINGS/lean-kernel` (not yet deployed — the probe reports unreachable and is non-fatal). Live governed-kernel artifacts: [SZLHOLDINGS/szl-kernels](https://huggingface.co/SZLHOLDINGS/szl-kernels)
 
-Expected output: `✓  VERIFIED — receipt is a real production run (mocked:false)`
+Expected verdict line when the `mocked:false` check passes: `✓  VERIFIED — receipt is flagged mocked:false by its producer`
 
 **Honest limits:** DSSE signing is `PLACEHOLDER` when `HATUN_MCP_SIGNING_KEY` is unset at
 runtime — the receipt will say so honestly (never fabricates a signature). Trust ceiling = 0.97
