@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import shutil
 import sys
@@ -106,6 +108,77 @@ class ChainVerifierTest(unittest.TestCase):
             verify_run(self.run)
         self.assertIn("state binding", str(cm.exception))
 
+    def test_intermediate_null_hash_pair_rejected(self) -> None:
+        """Equal null hashes must not disable the following span's continuity check."""
+        ledger_path = self.run / "proof_ledger.jsonl"
+        trace_path = self.run / "trace.jsonl"
+        ledger = _read_jsonl(ledger_path)
+        trace = _read_jsonl(trace_path)
+        ledger[4]["state_hash"] = None
+        trace[4]["state_next_hash"] = None
+        _write_jsonl(ledger_path, ledger)
+        _write_jsonl(trace_path, trace)
+        with self.assertRaisesRegex(ChainError, "proof_ledger step 5: 'state_hash'"):
+            verify_run(self.run)
+
+    def test_state_hash_type_and_format_rejected(self) -> None:
+        invalid_hashes = (
+            None, 0, 123, False, True, [], {}, "", " ", "g" * 32,
+            "a" * 31, "a" * 33, "a" * 64, "A" * 32, "a" * 32 + "\n",
+        )
+        fields = (
+            ("proof_ledger.jsonl", "state_hash"),
+            ("trace.jsonl", "state_prev_hash"),
+            ("trace.jsonl", "state_next_hash"),
+        )
+        for filename, field in fields:
+            path = self.run / filename
+            original = path.read_text(encoding="utf-8")
+            for index in (0, 4):
+                for value in invalid_hashes:
+                    with self.subTest(filename=filename, field=field, index=index, value=value):
+                        records = [json.loads(line) for line in original.splitlines()]
+                        records[index][field] = value
+                        _write_jsonl(path, records)
+                        try:
+                            with self.assertRaisesRegex(
+                                ChainError, f"'{field}' must be a 32-character lowercase hexadecimal string"
+                            ):
+                                verify_run(self.run)
+                        finally:
+                            path.write_text(original, encoding="utf-8")
+
+    def test_manifest_state_hash_type_and_format_rejected(self) -> None:
+        path = self.run / "run_manifest.json"
+        original = path.read_text(encoding="utf-8")
+        for value in (None, 0, False, [], {}, "", "g" * 32, "a" * 31, "a" * 64):
+            with self.subTest(value=value):
+                manifest = json.loads(original)
+                manifest["final_state_hash"] = value
+                path.write_text(json.dumps(manifest), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    ChainError,
+                    "run_manifest.json: 'final_state_hash' must be a 32-character lowercase hexadecimal string",
+                ):
+                    verify_run(self.run)
+
+    def test_first_previous_hash_is_not_an_external_anchor(self) -> None:
+        path = self.run / "trace.jsonl"
+        records = _read_jsonl(path)
+        records[0]["state_prev_hash"] = "0" * 32
+        _write_jsonl(path, records)
+        summary = verify_run(self.run)
+        self.assertEqual(summary["steps"], 12)
+        self.assertIn("not a proof of authenticity", summary["advisory"])
+
+    def test_manifest_non_object_rejected(self) -> None:
+        path = self.run / "run_manifest.json"
+        for value in (None, [], False, "", 0):
+            with self.subTest(value=value):
+                path.write_text(json.dumps(value), encoding="utf-8")
+                with self.assertRaisesRegex(ChainError, "run_manifest.json: expected a JSON object"):
+                    verify_run(self.run)
+
     def test_dropped_step_rejected(self) -> None:
         p = self.run / "trace.jsonl"
         recs = _read_jsonl(p)
@@ -185,6 +258,21 @@ class ChainVerifierTest(unittest.TestCase):
         recs[0]["state_hash"] = "f" * 32
         _write_jsonl(p, recs)
         self.assertEqual(verify_chain.main(["verify_chain.py", str(self.run)]), 1)
+
+    def test_cli_exit_one_on_intermediate_null_hash_pair(self) -> None:
+        ledger_path = self.run / "proof_ledger.jsonl"
+        trace_path = self.run / "trace.jsonl"
+        ledger = _read_jsonl(ledger_path)
+        trace = _read_jsonl(trace_path)
+        ledger[4]["state_hash"] = None
+        trace[4]["state_next_hash"] = None
+        _write_jsonl(ledger_path, ledger)
+        _write_jsonl(trace_path, trace)
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = verify_chain.main(["verify_chain.py", str(self.run)])
+        self.assertEqual(result, 1)
+        self.assertIn("proof_ledger step 5: 'state_hash'", stderr.getvalue())
 
 
 if __name__ == "__main__":

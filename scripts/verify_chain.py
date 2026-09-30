@@ -38,6 +38,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -81,6 +82,16 @@ def _require(record: dict[str, Any], field: str, ctx: str) -> Any:
     return record[field]
 
 
+def _require_state_hash(record: dict[str, Any], field: str, ctx: str) -> str:
+    """Require the published E4 state-hash format without asserting an algorithm."""
+    value = _require(record, field, ctx)
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{32}", value) is None:
+        raise ChainError(
+            f"{ctx}: '{field}' must be a 32-character lowercase hexadecimal string"
+        )
+    return value
+
+
 def _check_contiguous_steps(records: list[dict[str, Any]], label: str) -> None:
     for idx, rec in enumerate(records, start=1):
         step = _require(rec, "step", f"{label} record #{idx}")
@@ -117,10 +128,10 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
         lctx = f"proof_ledger step {i}"
         tctx = f"trace span {i}"
 
-        state_hash = _require(lrec, "state_hash", lctx)
+        state_hash = _require_state_hash(lrec, "state_hash", lctx)
         ledger_rid = _require(lrec, "receipt_id", lctx)
-        prev_hash = _require(trec, "state_prev_hash", tctx)
-        next_hash = _require(trec, "state_next_hash", tctx)
+        prev_hash = _require_state_hash(trec, "state_prev_hash", tctx)
+        next_hash = _require_state_hash(trec, "state_next_hash", tctx)
 
         receipt = _require(trec, "decision_receipt", tctx)
         if not isinstance(receipt, dict):
@@ -148,7 +159,7 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
             )
 
         # (5) hash-chain continuity between consecutive spans
-        if prev_next is not None and prev_hash != prev_next:
+        if i > 1 and prev_hash != prev_next:
             raise ChainError(
                 f"step {i}: chain continuity broken — state_prev_hash={prev_hash!r} "
                 f"!= previous span's state_next_hash={prev_next!r}"
@@ -165,9 +176,9 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ChainError(f"run_manifest.json: malformed JSON ({exc.msg})") from exc
-    manifest_final = manifest.get("final_state_hash")
-    if manifest_final is None:
-        raise ChainError("run_manifest.json: missing 'final_state_hash'")
+    if not isinstance(manifest, dict):
+        raise ChainError("run_manifest.json: expected a JSON object")
+    manifest_final = _require_state_hash(manifest, "final_state_hash", "run_manifest.json")
     if manifest_final != final_state_hash:
         raise ChainError(
             f"manifest anchor mismatch — run_manifest.final_state_hash={manifest_final!r} "
