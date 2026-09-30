@@ -170,6 +170,13 @@ is silently skipped. The adversarial suite in `tests/test_verify_chain.py`
 (run: `python3 -m unittest discover -s tests`) mutates a copy of the real E4
 artifacts and asserts every such tampering is rejected.
 
+State hashes in the ledger, trace (previous and next), and manifest anchor must
+be 32-character lowercase hexadecimal strings, matching the historical E4 run
+format. Nulls, non-string values, and malformed hash strings are rejected before
+comparison. Every span after the first must link to its predecessor; the first
+previous-state hash is checked for format but has no external genesis anchor.
+This format check does not identify a hash algorithm or establish authenticity.
+
 **Honest scope:** this is **advisory tamper-evidence** — it shows the published
 artifacts are self-consistent (any edit to one record breaks a cross-referenced
 invariant), **not** a proof of authenticity. It does not assert the state hashes
