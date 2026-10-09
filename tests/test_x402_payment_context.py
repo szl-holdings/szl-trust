@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import sys
 import time
@@ -91,23 +92,20 @@ class PaymentContextTests(unittest.TestCase):
                 mint(self.left, kid="missing"), keys=self.keys,
                 expected_audience=AUD, now=self.now, scheme="exact")
         self.assertEqual(raised.exception.reason, "UNKNOWN_KEY")
-        header = {"alg": "HS256", "kid": "k1"}
-        token = "e30.e30.e30"
-        # Build a structurally parseable header through the real encoder, then swap alg.
         good = mint(self.left)
-        parts = good.split(".")
-        raw = jwt.get_unverified_header(good)
-        self.assertEqual(raw["alg"], "EdDSA")
-        forged = jwt.encode(
-            {"aud": AUD}, "secret", algorithm="HS256", headers={"kid": "k1"})
+        header_b64, payload_b64, signature_b64 = good.split(".")
+        padded = header_b64 + "=" * (-len(header_b64) % 4)
+        header = json.loads(base64.urlsafe_b64decode(padded))
+        self.assertEqual(header["alg"], "EdDSA")
+        header["alg"] = "HS256"
+        swapped = base64.urlsafe_b64encode(
+            json.dumps(header, separators=(",", ":")).encode()).rstrip(b"=").decode()
+        forged = ".".join((swapped, payload_b64, signature_b64))
         with self.assertRaises(PaymentHold) as raised:
             validate_payment_context(
                 forged, keys=self.keys, expected_audience=AUD,
                 now=self.now, scheme="exact")
         self.assertEqual(raised.exception.reason, "WRONG_ALGORITHM")
-        self.assertIn("kid", header)
-        self.assertEqual(len(parts), 3)
-        self.assertGreater(len(token), 0)
 
     def test_rejects_token_supplied_jku(self):
         private = self.left
