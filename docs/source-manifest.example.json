@@ -1,0 +1,178 @@
+{
+  "schema": "szl.source-binding/v1",
+  "generated_at": "2026-10-27T22:50:00Z",
+  "source_of_truth": "GitHub releases, CI, and manifests; HF is a generated mirror until served-byte readback proves parity.",
+  "records": [
+    {
+      "id": "a11oy-github",
+      "kind": "repository",
+      "name": "A11oy source",
+      "status": "OPERATIONAL",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/a11oy",
+        "ref": "main",
+        "commit": "2ce00a0430088100a0d5f076d315bfd6e0e8e712",
+        "path": "src/"
+      },
+      "hf": null,
+      "domain": null
+    },
+    {
+      "id": "a11oy-hf",
+      "kind": "model-space",
+      "name": "SZLHOLDINGS/a11oy",
+      "status": "UNVERIFIED",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/a11oy",
+        "ref": "main",
+        "commit": "2ce00a0430088100a0d5f076d315bfd6e0e8e712",
+        "path": "docs/huggingface-ecosystem-manifest.json"
+      },
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "a11oy",
+        "revision": "5da5202a5377f1324890b59a83b326ed624f6552"
+      },
+      "domain": {
+        "url": "https://a-11-oy.com",
+        "identity": "REPORTED",
+        "execution_authority": false,
+        "slsa": "L1"
+      },
+      "binding_status": "DIVERGENT",
+      "source_binding_reason": "HF revision and runtime served revision are not independently proven to derive from current GitHub main."
+    },
+    {
+      "id": "vertical-services",
+      "kind": "repository",
+      "name": "Vertical Services",
+      "status": "OPERATIONAL",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/vertical-services",
+        "ref": "main",
+        "commit": "3e741881db7255f189b3b2795b82b17a9dd091bf",
+        "path": "frontier_app.py"
+      },
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "vertical-services",
+        "revision": "87aa6b7c"
+      },
+      "domain": null,
+      "binding_status": "DIVERGENT",
+      "source_binding_reason": "HF short revision is recorded, but served-byte and exact GitHub-source readback are still required."
+    },
+    {
+      "id": "szl-constellation",
+      "kind": "repository",
+      "name": "SZL Constellation",
+      "status": "OPERATIONAL",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/szl-constellation",
+        "ref": "main",
+        "commit": "b03b6a54b88ad6e25f3bc541a0d17b51ad9c73e7",
+        "path": ""
+      },
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "szl-constellation",
+        "revision": "1ff7a724"
+      },
+      "domain": null,
+      "binding_status": "DIVERGENT",
+      "source_binding_reason": "HF revision is not equal to the current GitHub main revision and no served-byte receipt is attached."
+    },
+    {
+      "id": "counsel",
+      "kind": "repository",
+      "name": "PRISM Counsel source",
+      "status": "OPERATIONAL",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/counsel",
+        "ref": "main",
+        "commit": "f2c3e3ccf053dd94bc2b4c5a3ba82544a4a5240f",
+        "path": "app.py"
+      },
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "counsel",
+        "revision": "5d6014a8"
+      },
+      "domain": null,
+      "binding_status": "DIVERGENT",
+      "source_binding_reason": "HF revision and GitHub main revision are not independently reconciled."
+    },
+    {
+      "id": "finance-hf",
+      "kind": "model-space",
+      "name": "finance",
+      "status": "SOURCE_UNBOUND",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": null,
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "finance",
+        "revision": "c01fa854"
+      },
+      "domain": null,
+      "source_binding_reason": "No exact GitHub repository and revision manifest has been independently verified."
+    },
+    {
+      "id": "terra-hf",
+      "kind": "model-space",
+      "name": "terra",
+      "status": "SOURCE_UNBOUND",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": null,
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "terra",
+        "revision": "52e0dbe9"
+      },
+      "domain": null,
+      "source_binding_reason": "No exact GitHub repository and revision manifest has been independently verified."
+    },
+    {
+      "id": "governed-agent-bench-hf",
+      "kind": "model-space",
+      "name": "governed-agent-bench",
+      "status": "SOURCE_UNBOUND",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": null,
+      "hf": {
+        "org": "SZLHOLDINGS",
+        "asset_type": "space",
+        "name": "governed-agent-bench",
+        "revision": "343d8aac"
+      },
+      "domain": null,
+      "source_binding_reason": "No exact GitHub repository and revision manifest has been independently verified."
+    },
+    {
+      "id": "szl-trust-main",
+      "kind": "repository",
+      "name": "SZL Trust",
+      "status": "OPERATIONAL",
+      "observed_at": "2026-10-27T22:50:00Z",
+      "github": {
+        "repo": "szl-holdings/szl-trust",
+        "ref": "main",
+        "commit": "44f8ddc708e6383cb3cfc954a9b8a4a26b8d5fc9",
+        "path": "scripts/"
+      },
+      "hf": null,
+      "domain": null
+    }
+  ]
+}
