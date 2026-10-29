@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Fail-closed validation for GitHub -> HF -> domain source manifests."""
+"""Validate declared source-manifest structure; this does not authorize actions."""
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -14,6 +15,36 @@ STATUSES = {
     "PROVED", "CONDITIONAL", "AXIOM_GATED", "OPERATIONAL", "QUALIFIED",
     "CONJECTURE", "SORRY", "UNVERIFIED", "SOURCE_UNBOUND", "HISTORICAL",
 }
+
+
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON member: {key!r}")
+        result[key] = value
+    return result
+
+
+def _reject_constant(value: str) -> None:
+    raise ValueError(f"non-finite JSON number: {value}")
+
+
+def _finite_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("JSON number is outside the finite float range")
+    return number
+
+
+def load_manifest(text: str) -> Any:
+    """Reject ambiguous members and non-finite values before schema validation."""
+    return json.loads(
+        text,
+        object_pairs_hook=_unique_object,
+        parse_constant=_reject_constant,
+        parse_float=_finite_float,
+    )
 
 
 def _required(value: Any, label: str, errors: list[str]) -> None:
@@ -33,8 +64,9 @@ def validate_record(record: Any, index: int) -> list[str]:
     _required(record.get("observed_at"), f"{record_id}.observed_at", errors)
 
     status = record.get("status")
-    if status not in STATUSES:
+    if not isinstance(status, str) or status not in STATUSES:
         errors.append(f"{record_id}.status must be one of {sorted(STATUSES)}")
+        return errors
 
     github = record.get("github")
     hf = record.get("hf")
@@ -58,7 +90,7 @@ def validate_record(record: Any, index: int) -> list[str]:
         else:
             _required(domain.get("url"), f"{record_id}.domain.url", errors)
             identity = domain.get("identity")
-            if identity not in {"REPORTED", "ATTESTED", "UNAVAILABLE"}:
+            if not isinstance(identity, str) or identity not in {"REPORTED", "ATTESTED", "UNAVAILABLE"}:
                 errors.append(f"{record_id}.domain.identity is invalid")
             if identity == "ATTESTED":
                 _required(domain.get("signer"), f"{record_id}.domain.signer", errors)
@@ -102,8 +134,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("manifest", type=Path)
     args = parser.parse_args(argv)
     try:
-        document = json.loads(args.manifest.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        document = load_manifest(args.manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
         print(f"UNVERIFIED: cannot read manifest: {exc}", file=sys.stderr)
         return 2
     errors = validate_manifest(document)
@@ -111,7 +143,8 @@ def main(argv: list[str] | None = None) -> int:
         for error in errors:
             print(f"DENY: {error}")
         return 1
-    print(f"ALLOW: {len(document['records'])} source records validated")
+    print(f"DECLARED: {len(document['records'])} source records structurally validated; "
+          "authenticity, freshness, parity, and authorization remain UNKNOWN")
     return 0
 
 
