@@ -162,8 +162,8 @@ python3 -m unittest discover -s tests -p test_validate_source_manifest.py -v
 
 The validator rejects duplicate JSON members (including nested source and proof
 fields), non-finite numbers, and invalid required structure. Exit `0` and the
-`DECLARED` message mean structural validation only. Historical, divergent, and
-unbound inventory records can remain in a structurally valid manifest.
+`DECLARED` message mean structural validation only. Historical and unbound
+inventory records can remain in a structurally valid manifest.
 Producer-supplied proof booleans, signer names, and source revisions are
 declarations; this checker does not verify their authenticity, freshness, served
 bytes, signatures, or execution authority. It never grants admission or changes
