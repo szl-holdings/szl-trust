@@ -153,6 +153,23 @@ cosign verify-blob \
   runs/E4-codex-kernel-2026-04-29/decision_receipt.json
 ```
 
+## Source-manifest structure check
+
+```bash
+python3 scripts/validate_source_manifest.py docs/source-manifest.example.json
+python3 -m unittest discover -s tests -p test_validate_source_manifest.py -v
+```
+
+The validator rejects duplicate JSON members (including nested source and proof
+fields), non-finite numbers, and invalid required structure. Exit `0` and the
+`DECLARED` message mean structural validation only. Historical and unbound
+inventory records can remain in a structurally valid manifest.
+Producer-supplied proof booleans, signer names, and source revisions are
+declarations; this checker does not verify their authenticity, freshness, served
+bytes, signatures, or execution authority. It never grants admission or changes
+the status of the recorded assets. Malformed JSON exits `2`; schema errors exit
+`1`.
+
 ## Offline chain-integrity check (no network, no SZL tooling)
 
 `scripts/verify_chain.py` verifies the **internal consistency** of a published
