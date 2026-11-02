@@ -29,6 +29,11 @@ Public documentation, status, health, build identity, the security contact, robo
 
 `scripts/x402_usage_ledger.py` is an offline lifecycle record. It does not move money. Recognized revenue stays zero until a record is settled, and a refund removes it. The ledger refuses raw payment signatures and raw request payloads.
 
+Lifecycle transitions accept only `actual_atomic`, `provider_reference`, and
+`evidence_digest` updates. The authorized tenant, request, principal, quote, and
+other authorization context cannot be rewritten by a transition; derived state
+and record digests remain ledger-owned. Rejected updates leave the record intact.
+
 ## Separate gates
 
 | Gate | State in this revision |
