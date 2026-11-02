@@ -248,6 +248,74 @@ class ChainVerifierTest(unittest.TestCase):
         with self.assertRaises(ChainError):
             verify_run(self.run)
 
+    def test_absent_optional_decision_receipt_still_passes(self) -> None:
+        (self.run / "decision_receipt.json").unlink()
+        self.assertEqual(verify_run(self.run)["steps"], 12)
+
+    def test_decision_receipt_must_be_an_object(self) -> None:
+        path = self.run / "decision_receipt.json"
+        for value in (None, [], False, "", 0):
+            with self.subTest(value=value):
+                path.write_text(json.dumps(value), encoding="utf-8")
+                with self.assertRaisesRegex(ChainError, "decision_receipt.json: expected a JSON object"):
+                    verify_run(self.run)
+
+    def test_present_decision_receipt_requires_last_receipt(self) -> None:
+        path = self.run / "decision_receipt.json"
+        path.write_text("{}", encoding="utf-8")
+        with self.assertRaisesRegex(ChainError, "missing required field 'last_receipt'"):
+            verify_run(self.run)
+
+    def test_last_receipt_must_be_an_object(self) -> None:
+        path = self.run / "decision_receipt.json"
+        for value in (None, [], False, "", 0):
+            with self.subTest(value=value):
+                path.write_text(json.dumps({"last_receipt": value}), encoding="utf-8")
+                with self.assertRaisesRegex(ChainError, "'last_receipt' must be an object"):
+                    verify_run(self.run)
+
+    def test_last_receipt_requires_binding_fields(self) -> None:
+        path = self.run / "decision_receipt.json"
+        original = path.read_text(encoding="utf-8")
+        for field in ("receipt_id", "mocked"):
+            with self.subTest(field=field):
+                receipt = json.loads(original)
+                del receipt["last_receipt"][field]
+                path.write_text(json.dumps(receipt), encoding="utf-8")
+                with self.assertRaisesRegex(ChainError, f"missing required field '{field}'"):
+                    verify_run(self.run)
+
+    def test_last_receipt_mocked_requires_boolean(self) -> None:
+        path = self.run / "decision_receipt.json"
+        original = path.read_text(encoding="utf-8")
+        for value in (0, 1, None, "false", [], {}):
+            with self.subTest(value=value):
+                receipt = json.loads(original)
+                receipt["last_receipt"]["mocked"] = value
+                path.write_text(json.dumps(receipt), encoding="utf-8")
+                with self.assertRaisesRegex(ChainError, "'mocked' must be a boolean"):
+                    verify_run(self.run)
+
+    def test_last_receipt_mocked_must_match_trace(self) -> None:
+        path = self.run / "decision_receipt.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt["last_receipt"]["mocked"] = True
+        path.write_text(json.dumps(receipt), encoding="utf-8")
+        with self.assertRaisesRegex(ChainError, "final trace posture"):
+            verify_run(self.run)
+
+    def test_cli_rejects_invalid_final_receipt_without_success_output(self) -> None:
+        path = self.run / "decision_receipt.json"
+        for value in (None, {}, {"last_receipt": None}):
+            with self.subTest(value=value):
+                path.write_text(json.dumps(value), encoding="utf-8")
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    result = verify_chain.main(["verify_chain.py", str(self.run)])
+                self.assertEqual(result, 1)
+                self.assertEqual(stdout.getvalue(), "")
+                self.assertIn("FAIL", stderr.getvalue())
+
     # ---- CLI contract ----------------------------------------------------
     def test_cli_exit_zero_on_real_run(self) -> None:
         self.assertEqual(verify_chain.main(["verify_chain.py", str(self.run)]), 0)
