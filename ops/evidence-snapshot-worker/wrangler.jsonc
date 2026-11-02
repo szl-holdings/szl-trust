@@ -1,0 +1,20 @@
+{
+  "name": "szl-evidence-snapshot",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-11-02",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "https://a-11-oy.com/api/v1/evidence-snapshot",
+      "zone_name": "a-11-oy.com"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1
+    }
+  }
+}

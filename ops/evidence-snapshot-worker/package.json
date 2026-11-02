@@ -1,0 +1,13 @@
+{
+  "name": "@szl/evidence-snapshot-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "npm test && npx --yes wrangler@4.128.0 deploy --dry-run"
+  },
+  "dependencies": {
+    "jose": "6.2.15"
+  }
+}
