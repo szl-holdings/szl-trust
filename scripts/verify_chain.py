@@ -21,8 +21,9 @@
 #   4. State binding: proof_ledger[i].state_hash == trace[i].state_next_hash.
 #   5. Hash-chain continuity: trace[i].state_prev_hash == trace[i-1].state_next_hash.
 #   6. Manifest anchor: run_manifest.final_state_hash == the final ledger state_hash.
-#   7. The top-level decision_receipt.json (last_receipt) agrees with the final
-#      trace span on receipt_id and on the `mocked` posture flag.
+#   7. If decision_receipt.json is present, its last_receipt must be an object
+#      with receipt_id and a boolean `mocked` posture flag matching the final
+#      trace span. Malformed supplied receipts are rejected, never skipped.
 #   8. Every trace span carries a boolean `mocked` flag (missing / non-boolean
 #      posture is rejected).
 #
@@ -192,20 +193,28 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
             dr = json.loads(dr_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             raise ChainError(f"decision_receipt.json: malformed JSON ({exc.msg})") from exc
-        last = dr.get("last_receipt")
-        if isinstance(last, dict):
-            final_trace_rid = trace[-1]["decision_receipt"]["receipt_id"]
-            final_trace_posture = trace[-1]["decision_receipt"]["mocked"]
-            if last.get("receipt_id") != final_trace_rid:
-                raise ChainError(
-                    f"decision_receipt.last_receipt.receipt_id={last.get('receipt_id')!r} "
-                    f"!= final trace receipt_id={final_trace_rid!r}"
-                )
-            if "mocked" in last and last["mocked"] != final_trace_posture:
-                raise ChainError(
-                    f"decision_receipt.last_receipt.mocked={last.get('mocked')!r} "
-                    f"!= final trace posture={final_trace_posture!r}"
-                )
+        if not isinstance(dr, dict):
+            raise ChainError("decision_receipt.json: expected a JSON object")
+        last = _require(dr, "last_receipt", "decision_receipt.json")
+        if not isinstance(last, dict):
+            raise ChainError("decision_receipt.json: 'last_receipt' must be an object")
+        last_ctx = "decision_receipt.last_receipt"
+        last_rid = _require(last, "receipt_id", last_ctx)
+        last_posture = _require(last, "mocked", last_ctx)
+        if not isinstance(last_posture, bool):
+            raise ChainError(f"{last_ctx}: 'mocked' must be a boolean, got {last_posture!r}")
+        final_trace_rid = trace[-1]["decision_receipt"]["receipt_id"]
+        final_trace_posture = trace[-1]["decision_receipt"]["mocked"]
+        if last_rid != final_trace_rid:
+            raise ChainError(
+                f"decision_receipt.last_receipt.receipt_id={last_rid!r} "
+                f"!= final trace receipt_id={final_trace_rid!r}"
+            )
+        if last_posture != final_trace_posture:
+            raise ChainError(
+                f"decision_receipt.last_receipt.mocked={last_posture!r} "
+                f"!= final trace posture={final_trace_posture!r}"
+            )
 
     postures = {trec["decision_receipt"]["mocked"] for trec in trace}
     return {
