@@ -54,6 +54,10 @@ REQUIRED = (
     "occurred_at",
 )
 
+# Authorization context and derived state are immutable across transitions.
+# Only these measured/provider result fields may be supplied by the caller.
+TRANSITION_FIELDS = frozenset({"actual_atomic", "provider_reference", "evidence_digest"})
+
 
 def _canonical(row: Mapping) -> bytes:
     return json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
@@ -129,6 +133,8 @@ class UsageLedger:
             raise LedgerHold("ILLEGAL_TRANSITION")
         if "payment_signature" in updates or "raw_payload" in updates:
             raise LedgerHold("FORBIDDEN_SENSITIVE_FIELD")
+        if updates.keys() - TRANSITION_FIELDS:
+            raise LedgerHold("IMMUTABLE_FIELD")
         if "actual_atomic" in updates and type(updates["actual_atomic"]) is not int:
             raise LedgerHold("INTEGER_REQUIRED")
         if "actual_atomic" in updates:

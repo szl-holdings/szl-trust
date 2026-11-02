@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from x402_usage_ledger import LedgerHold, UsageLedger  # noqa: E402
+from x402_usage_ledger import LedgerHold, UsageLedger, REQUIRED  # noqa: E402
 
 
 def fields(**overrides):
@@ -37,6 +37,54 @@ def fields(**overrides):
 
 
 class UsageLedgerTests(unittest.TestCase):
+    def test_transition_cannot_rewrite_authorization_or_internal_fields(self):
+        protected = {
+            **{name: "replacement" for name in REQUIRED},
+            "quoted_max_atomic": 1_000_000,
+            "quantity": 50,
+            "authorization_state": "REJECTED",
+            "settlement_state": "SETTLED",
+            "record_digest": "forged",
+            "extra_metadata": {"unreviewed": True},
+        }
+        # event_id names the positional target, so Python itself rejects a
+        # second value for that argument before the ledger can be mutated.
+        protected.pop("event_id")
+        for name, value in protected.items():
+            with self.subTest(field=name):
+                ledger = UsageLedger(cap_atomic=10_000)
+                original = ledger.authorize(fields())
+                with self.assertRaises(LedgerHold) as raised:
+                    ledger.transition("evt-1", "PRODUCED", **{name: value})
+                self.assertEqual(raised.exception.reason, "IMMUTABLE_FIELD")
+                self.assertEqual(ledger.for_tenant("tenant-a"), [original])
+                self.assertEqual(ledger.for_tenant("replacement"), [])
+                self.assertEqual(ledger.recognized_revenue_atomic(), 0)
+
+    def test_rejected_quote_rewrite_cannot_raise_later_settlement_limit(self):
+        ledger = UsageLedger(cap_atomic=10_000)
+        original = ledger.authorize(fields())
+        with self.assertRaises(LedgerHold):
+            ledger.transition("evt-1", "PRODUCED", quoted_max_atomic=1_000_000)
+        self.assertEqual(ledger.for_tenant("tenant-a"), [original])
+        ledger.transition("evt-1", "PRODUCED", actual_atomic=10_000)
+        with self.assertRaises(LedgerHold) as raised:
+            ledger.transition("evt-1", "SETTLEMENT_PENDING", actual_atomic=1_000_000)
+        self.assertEqual(raised.exception.reason, "AMOUNT_OUT_OF_BOUNDS")
+        ledger.transition("evt-1", "SETTLEMENT_PENDING", provider_reference="provider-ref")
+        ledger.transition("evt-1", "SETTLED")
+        self.assertEqual(ledger.recognized_revenue_atomic(), 10_000)
+
+    def test_sensitive_transition_fields_keep_their_specific_refusal(self):
+        for name in ("payment_signature", "raw_payload"):
+            with self.subTest(field=name):
+                ledger = UsageLedger(cap_atomic=10_000)
+                original = ledger.authorize(fields())
+                with self.assertRaises(LedgerHold) as raised:
+                    ledger.transition("evt-1", "PRODUCED", **{name: "secret"})
+                self.assertEqual(raised.exception.reason, "FORBIDDEN_SENSITIVE_FIELD")
+                self.assertEqual(ledger.for_tenant("tenant-a"), [original])
+
     def test_happy_path_recognizes_revenue_only_when_settled(self):
         ledger = UsageLedger(cap_atomic=10_000)
         row = ledger.authorize(fields())
