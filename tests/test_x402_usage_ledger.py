@@ -37,6 +37,46 @@ def fields(**overrides):
 
 
 class UsageLedgerTests(unittest.TestCase):
+    def test_identical_retry_preserves_current_record_in_every_lifecycle(self):
+        paths = (
+            ("PRODUCED", "SETTLEMENT_PENDING", "SETTLED", "DISPUTED", "SETTLED", "REFUNDED"),
+            ("FAILED",),
+            ("CANCELLED",),
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                ledger = UsageLedger(cap_atomic=10_000)
+                current = ledger.authorize(fields())
+                for lifecycle in ("AUTHORIZED", *path):
+                    if lifecycle != "AUTHORIZED":
+                        current = ledger.transition(
+                            "evt-1", lifecycle, actual_atomic=7_500,
+                            provider_reference="provider-ref", evidence_digest="b" * 64,
+                        )
+                    with self.subTest(lifecycle=lifecycle):
+                        before_revenue = ledger.recognized_revenue_atomic()
+                        self.assertEqual(ledger.authorize(fields()), current)
+                        self.assertEqual(ledger.authorize(fields()), current)
+                        self.assertEqual(ledger.for_tenant("tenant-a"), [current])
+                        self.assertEqual(ledger.recognized_revenue_atomic(), before_revenue)
+
+    def test_changed_admission_still_conflicts_after_transition(self):
+        for changes in (
+            {"tenant_id": "tenant-b"}, {"request_id": "req-b"},
+            {"quoted_max_atomic": 9_000}, {"quantity": 2},
+            {"request_digest": "c" * 64}, {"decision_id": "dec-2"},
+        ):
+            with self.subTest(changes=changes):
+                ledger = UsageLedger(cap_atomic=10_000)
+                ledger.authorize(fields())
+                current = ledger.transition("evt-1", "PRODUCED", actual_atomic=7_500)
+                with self.assertRaises(LedgerHold) as raised:
+                    ledger.authorize(fields(**changes))
+                self.assertEqual(raised.exception.reason, "DUPLICATE_CONFLICT")
+                self.assertEqual(ledger.for_tenant("tenant-a"), [current])
+                self.assertEqual(ledger.for_tenant("tenant-b"), [])
+                self.assertEqual(ledger.authorize(fields()), current)
+
     def test_transition_cannot_rewrite_authorization_or_internal_fields(self):
         protected = {
             **{name: "replacement" for name in REQUIRED},

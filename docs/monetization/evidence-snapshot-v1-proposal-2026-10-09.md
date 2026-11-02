@@ -34,6 +34,11 @@ Lifecycle transitions accept only `actual_atomic`, `provider_reference`, and
 other authorization context cannot be rewritten by a transition; derived state
 and record digests remain ledger-owned. Rejected updates leave the record intact.
 
+An identical authorization retry returns the event's current lifecycle record,
+including after settlement, cancellation or refund. It does not reset that state
+or recognize revenue again. The original admission digest is retained privately
+for this comparison; changed authorization input remains a duplicate conflict.
+
 ## Separate gates
 
 | Gate | State in this revision |

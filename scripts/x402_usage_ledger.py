@@ -5,7 +5,7 @@
 """Idempotent billing-event lifecycle for a proposed read-only SKU.
 
 The ledger stores no raw payment signature and no request payload. Duplicate
-retries with the same event identity return the original record. A different
+retries with the same admitted input return the current lifecycle record. A different
 body under the same event identity is a conflict, not a second charge.
 """
 
@@ -86,6 +86,7 @@ class UsageLedger:
         self.cap_atomic = cap_atomic
         self._by_event: dict[str, dict] = {}
         self._by_request: dict[tuple[str, str], str] = {}
+        self._admission_digest: dict[str, str] = {}
 
     def authorize(self, fields: Mapping, *, payment_signature=None, raw_payload=None) -> dict:
         if payment_signature is not None or raw_payload is not None:
@@ -114,7 +115,7 @@ class UsageLedger:
         digest = hashlib.sha256(_canonical(proposed)).hexdigest()
         existing = self._by_event.get(event_id)
         if existing is not None:
-            if existing["record_digest"] != digest:
+            if self._admission_digest[event_id] != digest:
                 raise LedgerHold("DUPLICATE_CONFLICT")
             return dict(existing)
         prior = self._by_request.get(request_key)
@@ -123,6 +124,7 @@ class UsageLedger:
         proposed["record_digest"] = digest
         self._by_event[event_id] = proposed
         self._by_request[request_key] = event_id
+        self._admission_digest[event_id] = digest
         return dict(proposed)
 
     def transition(self, event_id: str, lifecycle: str, **updates: object) -> dict:
