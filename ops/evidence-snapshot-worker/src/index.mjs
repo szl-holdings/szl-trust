@@ -94,7 +94,7 @@ function baseSnapshot() {
   return {
     schema: "szl.evidence-snapshot.v1",
     sku: "evidence_snapshot_v1",
-    version: "2026-11-02",
+    version: "2026-11-03",
     source: {
       repository: "szl-holdings/szl-trust",
       revision: SOURCE_REVISION,
@@ -106,6 +106,15 @@ function baseSnapshot() {
       amount_usd: "1.00"
     },
     inputs: INPUTS,
+    attribution: {
+      creator: "SZL Holdings",
+      license: "CC-BY-4.0",
+      license_url: "https://creativecommons.org/licenses/by/4.0/",
+      source_license_url: `https://github.com/szl-holdings/szl-trust/blob/${SOURCE_REVISION}/LICENSE`,
+      notice_url: `https://github.com/szl-holdings/szl-trust/blob/${SOURCE_REVISION}/NOTICE`,
+      changes: "Manifest metadata and links only; historical source artifacts are not modified or embedded.",
+      trademark_notice: "CC-BY-4.0 does not grant trademark rights or imply endorsement."
+    },
     checks: [
       { id: "source_revision_pinned", status: "PASS", observed: SOURCE_REVISION },
       { id: "input_count_exact", status: "PASS", observed: INPUTS.length, expected: 10 },
@@ -113,11 +122,13 @@ function baseSnapshot() {
       { id: "payment_context_verified", status: "PASS", observed: "Cloudflare Ed25519 JWT" }
     ],
     bounds: {
-      operation: "read_only",
-      effects: "none",
-      private_data: "none",
+      operation: "read_only_application_state",
+      effects: "No application-state writes; certificate retrieval and operational logging occur.",
+      private_data: "No private source content in this manifest; payment headers and request metadata are processed by the Worker and providers.",
       source_content_embedded: false,
-      claim: "Pinned public source manifest; receipt truth and performance are not re-evaluated by this endpoint."
+      claim: "Historical static public-source manifest and technical pilot, not model inference, live monitoring, or evidence of income. Receipt truth and performance are not re-evaluated by this endpoint.",
+      processing: "Payment verification may fetch public certificates from https://payments.cloudflare.com/certs. Success/rejection events are logged and configured provider observability may process request metadata; retention and provider payment processing are outside this manifest.",
+      readiness: "Neither this manifest nor its unsigned deterministic digest proves current deployment health, payment settlement, or operational readiness."
     }
   };
 }

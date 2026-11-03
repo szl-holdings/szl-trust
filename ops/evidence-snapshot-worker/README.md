@@ -11,8 +11,37 @@ manifest of ten public, revision-pinned SZL Trust artifacts. It does not
 serve private content, execute models, or claim that the cited receipts are
 scientifically or commercially valid.
 
-The Worker route is exact and leaves the rest of `a-11-oy.com` unchanged.
-`a11oy.net` remains the free independent proof surface.
+The configured Worker route is exact; deployment and Gateway routing must still
+be checked for noninterference with the rest of `a-11-oy.com`.
+The API-only proposal excludes `a11oy.net`; its live billing state must be
+verified separately, not assumed to be free.
+
+## Static pilot, attribution, and processing scope
+
+This is a technical pilot, not the model-inference product and not an income
+claim. Buyers receive the same historical E4 April 2026 manifest of ten public
+GitHub links and Git blob hashes, not the artifact contents, new model output,
+live monitoring, a fresh replay, or a scientific evaluation. The manifest version
+dates the metadata, not the historical run. Its deterministic SHA256 is unsigned
+and is neither a purchase receipt nor evidence of current deployment health,
+operational readiness or payment settlement. Historical health, approval and
+secret-status declarations in the linked artifacts are not current observations.
+
+The response attributes SZL Holdings and links CC-BY-4.0, the revision-pinned
+repository LICENSE and NOTICE. It identifies the manifest-only transformation;
+historical files remain unchanged. Preserve attribution, applicable notices and
+change disclosures when redistributing. CC-BY-4.0 does not grant trademark rights
+or imply endorsement; public availability does not establish exclusive rights.
+
+`bounds.operation` describes application-state access, not an absence of all
+effects. Payment verification may fetch the pinned public certificate endpoint.
+The Worker logs success/rejection events without logging the payment token;
+configured provider observability can process request metadata. The public
+manifest contains no private source content, but payment headers are processed
+by the Worker and providers. Provider retention, billing and settlement behavior
+are outside the manifest; these bounds are not a no-personal-data/no-cost promise.
+The existing bounds keys remain strings, but their values are now scoped prose;
+the metadata version and deterministic digest change accordingly.
 
 ## Payment verification and key freshness
 

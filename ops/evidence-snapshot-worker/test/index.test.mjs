@@ -40,7 +40,7 @@ test("a verified exact payment returns the bounded ten-input manifest", async ()
   assert.equal(body.price.amount_atomic, AMOUNT_ATOMIC);
   assert.equal(body.inputs.length, 10);
   assert.deepEqual(body.inputs, INPUTS);
-  assert.equal(body.package_sha256, "4d3088d071d3435abf560141dfc2bfcaa6de98fea54e151dbe1b979330942027");
+  assert.equal(body.package_sha256, "1cb0a5b2b85243f6bb22eaf95b8fc4a50907a6171a4c32fe49c942b5f00e212f");
 });
 
 test("the package digest is deterministic", async () => {
@@ -48,6 +48,36 @@ test("the package digest is deterministic", async () => {
   const first = await (await handleRequest(request({ token: "one" }), options)).json();
   const second = await (await handleRequest(request({ token: "two" }), options)).json();
   assert.equal(first.package_sha256, second.package_sha256);
+});
+
+test("manifest notices distinguish historical public payload from operational processing", async () => {
+  const response = await handleRequest(request({ token: "notice-test" }), {
+    verify: async () => ({})
+  });
+  const body = await response.json();
+  assert.equal(body.version, "2026-11-03");
+  assert.equal(body.attribution.creator, "SZL Holdings");
+  assert.equal(body.attribution.license, "CC-BY-4.0");
+  assert.equal(body.attribution.license_url, "https://creativecommons.org/licenses/by/4.0/");
+  for (const [field, file] of [["source_license_url", "LICENSE"], ["notice_url", "NOTICE"]]) {
+    assert.equal(body.attribution[field], `https://github.com/szl-holdings/szl-trust/blob/${SOURCE_REVISION}/${file}`);
+  }
+  assert.match(body.attribution.changes, /not modified or embedded/);
+  assert.match(body.attribution.trademark_notice, /does not grant trademark rights/);
+  assert.equal(body.bounds.operation, "read_only_application_state");
+  assert.match(body.bounds.effects, /No application-state writes/);
+  assert.match(body.bounds.effects, /certificate retrieval and operational logging/);
+  assert.match(body.bounds.private_data, /payment headers and request metadata are processed/);
+  assert.match(body.bounds.processing, /https:\/\/payments.cloudflare.com\/certs/);
+  assert.match(body.bounds.processing, /retention and provider payment processing are outside/);
+  assert.match(body.bounds.claim, /Historical static/);
+  assert.match(body.bounds.claim, /not model inference, live monitoring, or evidence of income/);
+  assert.match(body.bounds.readiness, /unsigned deterministic digest/);
+  assert.match(body.bounds.readiness, /payment settlement/);
+  assert.equal(body.bounds.source_content_embedded, false);
+  for (const key of ["operation", "effects", "private_data", "claim"]) {
+    assert.equal(typeof body.bounds[key], "string");
+  }
 });
 
 test("only the exact URL without a query is served", async () => {
