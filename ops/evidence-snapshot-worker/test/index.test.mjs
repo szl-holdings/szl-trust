@@ -40,7 +40,7 @@ test("a verified exact payment returns the bounded ten-input manifest", async ()
   assert.equal(body.price.amount_atomic, AMOUNT_ATOMIC);
   assert.equal(body.inputs.length, 10);
   assert.deepEqual(body.inputs, INPUTS);
-  assert.match(body.package_sha256, /^[0-9a-f]{64}$/);
+  assert.equal(body.package_sha256, "4d3088d071d3435abf560141dfc2bfcaa6de98fea54e151dbe1b979330942027");
 });
 
 test("the package digest is deterministic", async () => {
@@ -51,18 +51,28 @@ test("the package digest is deterministic", async () => {
 });
 
 test("only the exact URL without a query is served", async () => {
-  for (const url of [`${AUDIENCE}/extra`, `${AUDIENCE}?probe=1`]) {
+  let calls = 0;
+  for (const url of [
+    `${AUDIENCE}/extra`, `${AUDIENCE}/`, `${AUDIENCE}?probe=1`,
+    AUDIENCE.replace("a-11-oy.com", "other.example"),
+    AUDIENCE.replace("https:", "http:"), AUDIENCE.replace("evidence-snapshot", "other")
+  ]) {
     const response = await handleRequest(request({ url, token: "verified" }), {
-      verify: async () => ({})
+      verify: async () => { calls++; }
     });
     assert.equal(response.status, 404);
   }
+  assert.equal(calls, 0);
 });
 
 test("methods other than GET are rejected before payment validation", async () => {
-  const response = await handleRequest(request({ method: "POST", token: "verified" }), {
-    verify: async () => { throw new Error("must not run"); }
-  });
-  assert.equal(response.status, 405);
-  assert.equal(response.headers.get("allow"), "GET");
+  let calls = 0;
+  for (const method of ["POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]) {
+    const response = await handleRequest(request({ method, token: "verified" }), {
+      verify: async () => { calls++; }
+    });
+    assert.equal(response.status, 405);
+    assert.equal(response.headers.get("allow"), "GET");
+  }
+  assert.equal(calls, 0);
 });
