@@ -1,9 +1,10 @@
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { jwtVerify } from "jose";
+import { createPaymentKeyResolver } from "./payment-keys.mjs";
+export { JWKS_URL } from "./payment-keys.mjs";
 
 export const AUDIENCE = "https://a-11-oy.com/api/v1/evidence-snapshot";
 export const AMOUNT_ATOMIC = "1000000";
 export const SOURCE_REVISION = "44a384b63e2cc2c6820e8044d3485fc8ee3070f3";
-export const JWKS_URL = "https://payments.cloudflare.com/certs";
 
 const PUBLIC_RUN_PREFIX =
   `https://github.com/szl-holdings/szl-trust/blob/${SOURCE_REVISION}/runs/E4-codex-kernel-2026-04-29/`;
@@ -26,8 +27,6 @@ export const INPUTS = Object.freeze([
   media_type: mediaType,
   source_url: `${PUBLIC_RUN_PREFIX}${name}`
 })));
-
-const REMOTE_JWKS = createRemoteJWKSet(new URL(JWKS_URL));
 
 function json(status, body, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -59,31 +58,37 @@ async function sha256Hex(value) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function verifyPaymentContext(token) {
-  const { payload, protectedHeader } = await jwtVerify(token, REMOTE_JWKS, {
-    algorithms: ["EdDSA"],
-    audience: AUDIENCE,
-    clockTolerance: 5
-  });
+export function createPaymentVerifier({ fetch, now = Date.now } = {}) {
+  const keys = createPaymentKeyResolver({ fetch, now });
+  return async (token) => {
+    const { payload, protectedHeader } = await jwtVerify(token, keys, {
+      algorithms: ["EdDSA"],
+      audience: AUDIENCE,
+      clockTolerance: 5,
+      currentDate: new Date(now())
+    });
 
-  if (protectedHeader.alg !== "EdDSA") {
-    throw new Error("PAYMENT_CONTEXT_ALGORITHM_INVALID");
-  }
-  if (!Number.isInteger(payload.iat) || !Number.isInteger(payload.nbf) || !Number.isInteger(payload.exp)) {
-    throw new Error("PAYMENT_CONTEXT_TIME_CLAIMS_INVALID");
-  }
-  if (payload.aud !== AUDIENCE) {
-    throw new Error("PAYMENT_CONTEXT_AUDIENCE_INVALID");
-  }
-  if (payload.scheme !== "exact") {
-    throw new Error("PAYMENT_CONTEXT_SCHEME_INVALID");
-  }
-  if (payload.amount !== AMOUNT_ATOMIC) {
-    throw new Error("PAYMENT_CONTEXT_AMOUNT_INVALID");
-  }
+    if (protectedHeader.alg !== "EdDSA") {
+      throw new Error("PAYMENT_CONTEXT_ALGORITHM_INVALID");
+    }
+    if (!Number.isInteger(payload.iat) || !Number.isInteger(payload.nbf) || !Number.isInteger(payload.exp)) {
+      throw new Error("PAYMENT_CONTEXT_TIME_CLAIMS_INVALID");
+    }
+    if (payload.aud !== AUDIENCE) {
+      throw new Error("PAYMENT_CONTEXT_AUDIENCE_INVALID");
+    }
+    if (payload.scheme !== "exact") {
+      throw new Error("PAYMENT_CONTEXT_SCHEME_INVALID");
+    }
+    if (payload.amount !== AMOUNT_ATOMIC) {
+      throw new Error("PAYMENT_CONTEXT_AMOUNT_INVALID");
+    }
 
-  return payload;
+    return payload;
+  };
 }
+
+export const verifyPaymentContext = createPaymentVerifier();
 
 function baseSnapshot() {
   return {
