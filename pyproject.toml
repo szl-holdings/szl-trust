@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "szl-trust"
+version = "0.1.0"
+description = "SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+authors = [{name = "Stephen P. Lutar Jr.", email = "stephen@szlholdings.com"}]
+dependencies = [
+  "PyJWT==2.15.0",
+  "cryptography==50.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/szl-holdings/szl-trust"
+Repository = "https://github.com/szl-holdings/szl-trust"
+Organization = "https://github.com/szl-holdings"
+HuggingFace = "https://huggingface.co/SZLHOLDINGS"
+
+[tool.setuptools]
+packages = []
+py-modules = []
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = [".git", ".venv", "venv", "build", "dist", "node_modules", "__pycache__"]
+
+[tool.ruff.lint]
+# Baseline rule set (pyflakes + pycodestyle errors); extend deliberately per repo.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
