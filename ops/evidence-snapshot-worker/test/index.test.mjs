@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { AMOUNT_ATOMIC, AUDIENCE, INPUTS, SOURCE_REVISION, handleRequest } from "../src/index.mjs";
+import { PaymentContextError } from "../src/payment-context.mjs";
 
 function request({ method = "GET", url = AUDIENCE, token } = {}) {
   const headers = token ? { "PAYMENT-CONTEXT": token } : {};
@@ -105,4 +106,28 @@ test("methods other than GET are rejected before payment validation", async () =
     assert.equal(response.headers.get("allow"), "GET");
   }
   assert.equal(calls, 0);
+});
+
+test("logs carry a reason code or the package digest, never the token or an error message", async () => {
+  const lines = [];
+  const original = console.log;
+  console.log = (line) => { lines.push(String(line)); };
+  try {
+    await handleRequest(request({ token: "secret-token-one" }), {
+      verify: async () => { throw new PaymentContextError("AMOUNT_MISMATCH"); }
+    });
+    await handleRequest(request({ token: "secret-token-two" }), {
+      verify: async (token) => { throw new Error(`echo ${token}`); }
+    });
+    await handleRequest(request({ token: "secret-token-three" }), { verify: async () => ({}) });
+  } finally {
+    console.log = original;
+  }
+  assert.equal(lines.length, 3);
+  assert.deepEqual(JSON.parse(lines[0]), {
+    event: "evidence_snapshot", outcome: "payment_context_rejected", reason: "AMOUNT_MISMATCH"
+  });
+  assert.equal(JSON.parse(lines[1]).reason, "UNCLASSIFIED");
+  assert.equal(JSON.parse(lines[2]).outcome, "served");
+  for (const line of lines) assert.doesNotMatch(line, /secret-token/);
 });

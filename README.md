@@ -200,3 +200,31 @@ artifacts are self-consistent (any edit to one record breaks a cross-referenced
 invariant), **not** a proof of authenticity. It does not assert the state hashes
 were produced by a trusted signer and never fabricates a signature. Λ =
 Conjecture 1 (advisory). Trust ceiling 0.97 — never 1.0 by doctrine.
+
+## x402 `PAYMENT-CONTEXT` validators (offline; nothing here charges)
+
+This repository holds the estate's two `PAYMENT-CONTEXT` validators for
+Cloudflare Monetization Gateway: `scripts/x402_payment_context.py` (Python)
+and `ops/evidence-snapshot-worker/src/payment-context.mjs` (Workers runtime).
+They share one contract and the vectors in
+`tests/vectors/x402-payment-context.v1.json`, which
+`tools/x402_payment_context_vectors.py` generates from test-only keys. The
+validator in `governed-receipt-spec` (`science_evidence/payment.py`) is
+deprecated in favour of these.
+
+The caller must state the route's scheme and price: an `exact` context must
+sign exactly that amount and an `upto` maximum may not exceed it, so a payment
+made under a cheaper rule is rejected. Leeway is 5 seconds by default and at
+most 30. Keys come only from the pinned JWKS, and a key set that cannot be
+fetched fails closed.
+
+```bash
+python3 -m unittest discover -s tests -p 'test_x402_*.py' -v
+python3 tools/x402_payment_context_vectors.py --check
+(cd ops/evidence-snapshot-worker && npm ci && npm test)
+```
+
+In this repository they are wired only to the evidence snapshot, which is not
+offered: no Gateway rule exists for it, and its apex route must move to an API
+host first (see
+`docs/monetization/evidence-snapshot-activation-2026-11-02.md`).
