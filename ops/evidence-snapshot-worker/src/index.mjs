@@ -1,9 +1,14 @@
-import { jwtVerify } from "jose";
+import { DEFAULT_LEEWAY_SECONDS, verifyPaymentContext as verifyContext } from "./payment-context.mjs";
 import { createPaymentKeyResolver } from "./payment-keys.mjs";
 export { JWKS_URL } from "./payment-keys.mjs";
 
+// Owner-selected price per docs/monetization/evidence-snapshot-activation-2026-11-02.md.
+// Not offered yet: no Gateway rule exists for this path and the apex host is a
+// free website under the 2026-11-06 owner policy, so the route must move to an
+// API host (owner decision) before deployment.
 export const AUDIENCE = "https://a-11-oy.com/api/v1/evidence-snapshot";
 export const AMOUNT_ATOMIC = "1000000";
+export const SCHEME = "exact";
 export const SOURCE_REVISION = "44a384b63e2cc2c6820e8044d3485fc8ee3070f3";
 
 const PUBLIC_RUN_PREFIX =
@@ -58,34 +63,18 @@ async function sha256Hex(value) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+// Delegates every check to the shared validator (payment-context.mjs), which
+// runs the same conformance vectors as scripts/x402_payment_context.py.
 export function createPaymentVerifier({ fetch, now = Date.now } = {}) {
   const keys = createPaymentKeyResolver({ fetch, now });
-  return async (token) => {
-    const { payload, protectedHeader } = await jwtVerify(token, keys, {
-      algorithms: ["EdDSA"],
-      audience: AUDIENCE,
-      clockTolerance: 5,
-      currentDate: new Date(now())
-    });
-
-    if (protectedHeader.alg !== "EdDSA") {
-      throw new Error("PAYMENT_CONTEXT_ALGORITHM_INVALID");
-    }
-    if (!Number.isInteger(payload.iat) || !Number.isInteger(payload.nbf) || !Number.isInteger(payload.exp)) {
-      throw new Error("PAYMENT_CONTEXT_TIME_CLAIMS_INVALID");
-    }
-    if (payload.aud !== AUDIENCE) {
-      throw new Error("PAYMENT_CONTEXT_AUDIENCE_INVALID");
-    }
-    if (payload.scheme !== "exact") {
-      throw new Error("PAYMENT_CONTEXT_SCHEME_INVALID");
-    }
-    if (payload.amount !== AMOUNT_ATOMIC) {
-      throw new Error("PAYMENT_CONTEXT_AMOUNT_INVALID");
-    }
-
-    return payload;
-  };
+  return (token) => verifyContext(token, {
+    keys,
+    expectedAudience: AUDIENCE,
+    scheme: SCHEME,
+    expectedAmount: AMOUNT_ATOMIC,
+    now: Math.floor(now() / 1000),
+    leewaySeconds: DEFAULT_LEEWAY_SECONDS
+  });
 }
 
 export const verifyPaymentContext = createPaymentVerifier();
@@ -150,8 +139,10 @@ export async function handleRequest(request, { verify = verifyPaymentContext } =
 
   try {
     await verify(token);
-  } catch {
-    console.log(JSON.stringify({ event: "evidence_snapshot", outcome: "payment_context_rejected" }));
+  } catch (error) {
+    // Log the stable reason code only; never the token or an error message.
+    const reason = typeof error?.reason === "string" ? error.reason : "UNCLASSIFIED";
+    console.log(JSON.stringify({ event: "evidence_snapshot", outcome: "payment_context_rejected", reason }));
     return json(403, { state: "PAYMENT_CONTEXT_INVALID" });
   }
 

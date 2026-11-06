@@ -43,10 +43,23 @@ function harness(respond = () => response()) {
   return { verify, requests, advance: (ms) => { time += ms; } };
 }
 
+function rejectsWith(promise, reason) {
+  return assert.rejects(promise, (error) => {
+    assert.equal(error.reason, reason);
+    return true;
+  });
+}
+
 test("real Ed25519 payment verifies and serves the unchanged manifest", async () => {
   const h = harness();
   const token = await sign();
-  assert.deepEqual(await h.verify(token), claims);
+  const verified = await h.verify(token);
+  assert.deepEqual({ ...verified, token_sha256: undefined }, {
+    audience: AUDIENCE, scheme: "exact", amount: 1000000,
+    iat: seconds, nbf: seconds, exp: seconds + 3600, kid: "first",
+    token_sha256: undefined, settlement_evidence: false
+  });
+  assert.match(verified.token_sha256, /^[0-9a-f]{64}$/);
   const result = await handleRequest(new Request(AUDIENCE, { headers: { "PAYMENT-CONTEXT": token } }), {
     verify: h.verify
   });
@@ -87,7 +100,26 @@ for (const claim of ["iat", "nbf", "exp"]) {
 
 test("existing five-second clock tolerance and no arbitrary iat TTL are preserved", async () => {
   await harness().verify(await sign({ ...claims, iat: seconds - 86400, nbf: seconds + 4 }));
-  await harness().verify(await sign({ ...claims, exp: seconds - 4 }));
+  await harness().verify(await sign({ ...claims, iat: seconds - 60, nbf: seconds - 60, exp: seconds - 4 }));
+});
+
+test("a future iat gets the same five-second leeway as nbf", async () => {
+  await harness().verify(await sign({ ...claims, iat: seconds + 4 }));
+  await rejectsWith(harness().verify(await sign({ ...claims, iat: seconds + 6 })), "NOT_YET_VALID");
+});
+
+test("a token issued after it expires is rejected", async () => {
+  await rejectsWith(
+    harness().verify(await sign({ ...claims, iat: seconds + 2, nbf: seconds, exp: seconds + 1 })),
+    "TIME_CLAIMS_INVALID"
+  );
+});
+
+test("a context signed for a cheaper or pricier rule is rejected", async () => {
+  for (const amount of ["10000", "25000", "100000", "999999", "1000001"]) {
+    await rejectsWith(harness().verify(await sign({ ...claims, amount })), "AMOUNT_MISMATCH");
+  }
+  await rejectsWith(harness().verify(await sign({ ...claims, scheme: "upto", amount: "1000" })), "WRONG_SCHEME");
 });
 
 test("wrong signer with a trusted kid is rejected cryptographically", async () => {
