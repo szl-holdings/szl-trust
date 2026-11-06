@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "szl-trust"
+version = "0.1.0"
+description = "SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "CC-BY-4.0"
+authors = [{ name = "Stephen Lutar", email = "stephen@szlholdings.com" }]
+dependencies = ["PyJWT==2.15.0", "cryptography==50.0.0"]
+
+[project.urls]
+Homepage = "https://a-11-oy.com"
+Repository = "https://github.com/szl-holdings/szl-trust"
+
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["build", "dist", ".venv", "node_modules"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
