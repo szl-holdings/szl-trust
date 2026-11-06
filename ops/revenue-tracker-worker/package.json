@@ -1,0 +1,21 @@
+{
+  "name": "@szl/revenue-tracker-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "szl-revenue-tracker Cloudflare Worker: records only cryptographically verified x402 payment authorizations and origin-reported settlements to Analytics Engine.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "check": "npm test && npm run build"
+  },
+  "dependencies": {
+    "jose": "6.2.15"
+  },
+  "devDependencies": {
+    "wrangler": "4.150.0"
+  }
+}

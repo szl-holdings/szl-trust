@@ -1,0 +1,140 @@
+# GitOps for the szl-revenue-tracker Worker: test every change, deploy only the
+# exact commit that reached main, then fail unless the Workers API shows that
+# exact 40-character SHA serving 100% of the Worker's traffic. The Worker has no
+# route, so the readback cannot use a public endpoint. Owner prerequisites are in
+# ops/revenue-tracker-worker/README.md.
+name: Revenue tracker worker
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/revenue-tracker-worker.yml'
+      - 'ops/revenue-tracker-worker/**'
+      - 'ops/evidence-snapshot-worker/src/payment-keys.mjs'
+      - 'scripts/verify_worker_deployment.py'
+      - 'tests/test_verify_worker_deployment.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/revenue-tracker-worker.yml'
+      - 'ops/revenue-tracker-worker/**'
+      - 'ops/evidence-snapshot-worker/src/payment-keys.mjs'
+      - 'scripts/verify_worker_deployment.py'
+      - 'tests/test_verify_worker_deployment.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: revenue-tracker-worker-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test verified-payment counting and the deployment readback
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          check-latest: false
+          cache: npm
+          cache-dependency-path: ops/revenue-tracker-worker/package-lock.json
+      - name: Install the locked dependencies
+        working-directory: ops/revenue-tracker-worker
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Unit tests (real Ed25519 tokens, fake JWKS, origin and dataset)
+        working-directory: ops/revenue-tracker-worker
+        run: npm test
+      - name: Bundle the exact upload without deploying
+        working-directory: ops/revenue-tracker-worker
+        run: npm run build
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Test the Workers API readback (stdlib only, no network)
+        run: python3 -m unittest tests.test_verify_worker_deployment -v
+
+  deploy:
+    name: Deploy szl-revenue-tracker and read back its revision
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: cloudflare-production
+    concurrency:
+      group: deploy-szl-revenue-tracker
+      cancel-in-progress: false
+    env:
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Checkout exact protected source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Prove exact checkout identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          check-latest: false
+      - name: Install the locked dependencies
+        working-directory: ops/revenue-tracker-worker
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          test "$(npx --no-install wrangler --version | tail -n 1)" = "4.150.0"
+      - name: Require Cloudflare deployment credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::cloudflare-production needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (see ops/revenue-tracker-worker/README.md)."
+            exit 1
+          fi
+      - name: Deploy the exact commit with SOURCE_REVISION
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ops/revenue-tracker-worker
+          packageManager: npm
+          wranglerVersion: '4.150.0'
+          command: deploy --message ${{ github.sha }}
+          vars: |
+            SOURCE_REVISION
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Read back the deployed revision through the Workers API
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          python3 scripts/verify_worker_deployment.py
+          --script szl-revenue-tracker
+          --expect-revision "${GITHUB_SHA}"
+          --require-binding REVENUE_EVENTS:analytics_engine

@@ -84,6 +84,8 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 | `runs/E4-codex-kernel-2026-04-29/trace.jsonl` | 12 execution spans — all `mocked:false` |
 | `runs/E4-codex-kernel-2026-04-29/deployment_contract.json` | Deployment contract (platform: replit, repo_commit anchored) |
 | `runs/E4-codex-kernel-2026-04-29/decision_receipt.json` | Canonical decision receipt |
+| `ops/evidence-snapshot-worker/` | Cloudflare Worker source for the paid evidence-snapshot route (not in the account's Workers list on 2026-11-06) |
+| `ops/revenue-tracker-worker/` | `szl-revenue-tracker` Worker: records only verified `PAYMENT-CONTEXT` authorizations and origin-reported settlements; no route by default |
 
 ## Honesty scope
 

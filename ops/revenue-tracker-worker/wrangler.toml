@@ -1,0 +1,33 @@
+# Checked-in deployment contract for the szl-revenue-tracker Worker.
+# No secrets: the Worker needs none. SOURCE_REVISION is injected by the deploy
+# workflow as the full 40-character commit SHA (`--var`).
+
+name = "szl-revenue-tracker"
+main = "src/index.mjs"
+compatibility_date = "2026-08-31"
+
+# No route, no custom domain, no workers.dev URL, no preview URLs: deploying
+# this Worker attaches it to nothing. The owner decides where (and whether) it
+# sits in front of a monetized origin; see README.md before adding a route.
+workers_dev = false
+preview_urls = false
+
+[vars]
+# Empty: issuer authenticity comes from the pinned JWKS
+# (https://payments.cloudflare.com/certs) alone, because Cloudflare documents no
+# `iss` claim. Set the exact value to also require a matching `iss` claim.
+PAYMENT_CONTEXT_ISSUER = ""
+
+[[analytics_engine_datasets]]
+binding = "REVENUE_EVENTS"
+dataset = "szl_revenue_events"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+# Invocation logs would persist request metadata of paid traffic; the Worker
+# logs only its own token-free structured events.
+invocation_logs = false
