@@ -3,6 +3,13 @@
 Status: design/proposed. Not deployed, not platform-approved, and not monetizing.
 This note does not accept terms, name a receiving wallet, or set a live price.
 
+> Superseded on price and host. The 2026-11-02 activation record
+> (`evidence-snapshot-activation-2026-11-02.md`) records the owner-selected
+> price of `$1.00` (`1,000,000` atomic units), which the Worker and
+> `scripts/x402_payment_context.py` now share. Under the 2026-11-06 owner
+> policy the apex website host stays free, so the endpoint must move to an API
+> host before activation. The 10,000-unit amount below is kept as history.
+
 The implementation contract remains
 `docs/monetization/x402-commercial-readiness-2026-10-08.md`.
 
@@ -25,7 +32,7 @@ Revalidate those limits, seller eligibility, and account entitlements before any
 
 Public documentation, status, health, build identity, the security contact, robots and sitemaps, public release verification, known bounds, and authentication or MCP discovery. There is no payment rule for `/*`, `/api/*`, or the whole MCP endpoint.
 
-`scripts/x402_payment_context.py` rejects a missing or invalid `PAYMENT-CONTEXT`, ignores token-supplied key URLs, and still returns `COMMERCIAL_NOT_ENABLED` for a valid context. `production_charging_enabled()` returns false for every record, including one that claims approval.
+`scripts/x402_payment_context.py` rejects a missing or invalid `PAYMENT-CONTEXT`, rejects token-supplied key URLs, requires the caller's expected price, and still returns `COMMERCIAL_NOT_ENABLED` for a valid context. `production_charging_enabled()` returns false for every record, including one that claims approval.
 
 `scripts/x402_usage_ledger.py` is an offline lifecycle record. It does not move money. Recognized revenue stays zero until a record is settled, and a refund removes it. The ledger refuses raw payment signatures and raw request payloads.
 

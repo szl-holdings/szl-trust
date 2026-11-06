@@ -1,8 +1,15 @@
 # SZL evidence snapshot Worker
 
+> **Not offered yet; do not deploy on the apex.** Owner policy (2026-11-06):
+> charge API and MCP hosts only; websites (including `a-11-oy.com`), pricing,
+> the proof site, health and well-known paths stay free. The route below is on
+> the apex website host, so it has to move to an API host (owner decision)
+> before deployment, and no Monetization Gateway rule exists for it. See
+> [the activation record](../../docs/monetization/evidence-snapshot-activation-2026-11-02.md).
+
 This Worker serves one bounded paid route:
 
-`GET https://a-11-oy.com/api/v1/evidence-snapshot`
+`GET https://a-11-oy.com/api/v1/evidence-snapshot` (to move to an API host)
 
 It fails closed unless Cloudflare Monetization Gateway supplies a valid
 Ed25519 `PAYMENT-CONTEXT` JWT for the exact audience and the fixed
@@ -45,13 +52,27 @@ the metadata version and deterministic digest change accordingly.
 
 ## Payment verification and key freshness
 
+Verification is delegated to `src/payment-context.mjs`, the Workers-runtime
+`PAYMENT-CONTEXT` validator. Its Python twin is `scripts/x402_payment_context.py`
+at the repository root. Both run the shared vectors in
+`tests/vectors/x402-payment-context.v1.json` (here: `test/vectors.test.mjs`)
+and must return the same decision and reason code for each one.
+
 The verifier accepts only EdDSA JWTs backed by **Ed25519** public keys from
 `https://payments.cloudflare.com/certs`. Redirects and token-supplied key
-locations/material (`jku`, `x5u`, `jwk`, `x5c`) are rejected. The exact scalar
-audience, string amount `1000000`, and scheme `exact` are required, as are
-integer `iat`, `nbf`, and `exp` claims. JOSE enforces `nbf`/`exp` with the existing
-five-second clock tolerance; no additional payment TTL or replay policy is imposed.
-No `PAYMENT-SETTLEMENT` header is issued by this Worker.
+locations/material (`jku`, `x5u`, `jwk`, `x5c`) are rejected, as are `crit` and
+`b64` headers and non-canonical base64url. The exact scalar audience, scheme
+`exact` and string amount `1000000` are required: a context signed for any
+other amount, such as a cheaper rule's, is rejected (`AMOUNT_MISMATCH`). Integer
+`iat`, `nbf` and `exp` claims are required, and `iat` and `nbf` may not be after
+`exp`. `nbf`, `exp` and a future `iat` get a five-second leeway (the shared
+module accepts 0-30 seconds). No payment TTL is imposed.
+
+Cloudflare's documented claims define no `jti` or nonce. The shared module has
+an optional replay guard keyed on the token's SHA-256, but it lives in one
+isolate's memory, which is not a guard across Workers isolates, so this Worker
+does not enable it. No `PAYMENT-SETTLEMENT` header is issued by this Worker.
+A rejection is logged with its stable reason code only, never the token.
 
 Each Worker instance coalesces concurrent certificate retrievals. Cached keys
 are reused only for the endpoint's explicit HTTP `max-age`, reduced by `Age`,
@@ -71,15 +92,20 @@ npm run check
 ```
 
 For local-only verification without a Wrangler dry run, use `npm test`.
-The tests use ephemeral in-memory signing keys, fake fetch responses and an
-injected clock: no external network requests, real credentials, wallet keys,
-or purchases. They cover real signature verification, claim rejection, route
-guards, freshness, rotation, errors, size/deadline limits, and concurrent fetches.
+The tests use ephemeral in-memory signing keys, the shared vectors' test-only
+keys, fake fetch responses and an injected clock: no external network requests,
+real credentials, wallet keys, or purchases. They cover real signature
+verification, claim rejection (including cheaper-rule amounts), route guards,
+freshness, rotation, errors, size/deadline limits, concurrent fetches and log
+contents.
 Fetch/clock injection is a module-level testing seam only; there are no
 deployment settings to override the pinned certificate URL or trust policy.
 
 ## Deploy sequence
 
+0. Owner decision on the API host. Change the Worker `AUDIENCE` and route,
+   `EVIDENCE_SNAPSHOT_AUDIENCE` in `scripts/x402_payment_context.py` and the
+   activation record together (`tests/test_x402_price_alignment.py` checks them).
 1. Review and merge the source change.
 2. Deploy the Worker with the pinned Wrangler version.
 3. Verify the direct origin fails closed without `PAYMENT-CONTEXT`.
