@@ -50,9 +50,17 @@ jobs:
           check-latest: false
           cache: npm
           cache-dependency-path: ops/revenue-tracker-worker/package-lock.json
-      - name: Install the locked dependencies
+      - name: Install and verify the locked toolchain
+        id: toolchain
         working-directory: ops/revenue-tracker-worker
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          wrangler_version="$(node -p "require('./package.json').devDependencies.wrangler")"
+          installed_wrangler_version="$(npx --no-install wrangler --version | tail -n 1)"
+          test "$installed_wrangler_version" = "$wrangler_version"
+          echo "wrangler_version=$wrangler_version" >> "$GITHUB_OUTPUT"
       - name: Unit tests (real Ed25519 tokens, fake JWKS, origin and dataset)
         working-directory: ops/revenue-tracker-worker
         run: npm test
@@ -96,11 +104,17 @@ jobs:
         with:
           node-version: '22'
           check-latest: false
-      - name: Install the locked dependencies
+      - name: Install and verify the locked toolchain
+        id: toolchain
         working-directory: ops/revenue-tracker-worker
+        shell: bash
         run: |
+          set -euo pipefail
           npm ci --ignore-scripts --no-audit --no-fund
-          test "$(npx --no-install wrangler --version | tail -n 1)" = "4.150.0"
+          wrangler_version="$(node -p "require('./package.json').devDependencies.wrangler")"
+          installed_wrangler_version="$(npx --no-install wrangler --version | tail -n 1)"
+          test "$installed_wrangler_version" = "$wrangler_version"
+          echo "wrangler_version=$wrangler_version" >> "$GITHUB_OUTPUT"
       - name: Require Cloudflare deployment credentials
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -121,7 +135,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: ops/revenue-tracker-worker
           packageManager: npm
-          wranglerVersion: '4.150.0'
+          wranglerVersion: ${{ steps.toolchain.outputs.wrangler_version }}
           command: deploy --message ${{ github.sha }}
           vars: |
             SOURCE_REVISION
