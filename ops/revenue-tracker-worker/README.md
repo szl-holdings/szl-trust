@@ -90,8 +90,8 @@ replays matter.
 ```shell
 cd ops/revenue-tracker-worker
 npm ci --ignore-scripts
-npm test         # 48 tests: real Ed25519 tokens, fake JWKS/origin/dataset
-npm run build    # wrangler deploy --dry-run with the locked Wrangler 4.150.0
+npm test         # real Ed25519 tokens, fake JWKS/origin/dataset
+npm run build    # wrangler deploy --dry-run with the locked Wrangler
 ```
 
 The post-deploy readback is tested from the repository root with
@@ -102,10 +102,13 @@ The post-deploy readback is tested from the repository root with
 `.github/workflows/revenue-tracker-worker.yml` tests every change. On a push to
 `main` (or `workflow_dispatch` on `main`) its `deploy` job, gated by the
 `cloudflare-production` environment, checks out exactly `github.sha`, deploys
-with `cloudflare/wrangler-action` pinned to commit
-`9acf94ace14e7dc412b076f2c5c20b8ce93c79cd` (v3.15.0) and the full SHA as the
-`SOURCE_REVISION` var, then runs `scripts/verify_worker_deployment.py`. Because
-the Worker has no public endpoint, that readback uses the Workers API: the
+with the SHA-pinned `cloudflare/wrangler-action` in that workflow and the full
+SHA as the `SOURCE_REVISION` var, then runs
+`scripts/verify_worker_deployment.py`. Both test and deploy jobs verify that
+the installed Wrangler CLI matches the exact version in `package.json`,
+after `npm ci` validates the lockfile. The deploy action receives that verified
+version, so a dependency update cannot leave a separate workflow pin stale.
+Because the Worker has no public endpoint, that readback uses the Workers API: the
 newest deployment must route 100% of traffic to one version whose
 `SOURCE_REVISION` binding equals the SHA and which carries the
 `REVENUE_EVENTS` Analytics Engine binding; otherwise the job fails.
