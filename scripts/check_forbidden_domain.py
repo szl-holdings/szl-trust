@@ -29,11 +29,16 @@ def tracked_files(root: Path) -> list[Path]:
         raise RuntimeError(f"git ls-files failed: {detail or result.returncode}")
     if not result.stdout:
         raise RuntimeError("git ls-files returned no files")
-    return [
-        root / Path(raw.decode("utf-8"))
-        for raw in result.stdout.split(b"\0")
-        if raw
-    ]
+    paths: list[Path] = []
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        try:
+            name = raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise RuntimeError("git ls-files returned invalid UTF-8 filename") from exc
+        paths.append(root / Path(name))
+    return paths
 
 
 def scan_content(path: Path, content: bytes) -> list[str]:
