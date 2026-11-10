@@ -45,11 +45,11 @@ class ForbiddenDomainScannerTests(unittest.TestCase):
     def test_unmentioned_domain_fails(self) -> None:
         violations = self._scan_files({"README.md": b"Visit https://a11oy" + b".com\n"})
         self.assertEqual(len(violations), 1)
-        self.assertIn("README.md:1:Visit https://a11oy.com", violations[0])
+        self.assertIn("README.md:1:Visit https://a11oy" + ".com", violations[0])
 
     def test_domain_in_path_does_not_exempt_content(self) -> None:
         self.assertEqual(
-            self._scan_files({"a11oy.com-not-a-rule.txt": b"ordinary content\n"}),
+            self._scan_files({"a11oy" + ".com-not-a-rule.txt": b"ordinary content\n"}),
             [],
         )
 
