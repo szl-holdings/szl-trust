@@ -8,8 +8,10 @@ import io
 from pathlib import Path
 import tempfile
 import unittest
+import sys
 from unittest import mock
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import check_forbidden_domain as checker
 
 
@@ -41,7 +43,7 @@ class ForbiddenDomainScannerTests(unittest.TestCase):
         )
 
     def test_unmentioned_domain_fails(self) -> None:
-        violations = self._scan_files({"README.md": b"Visit https://a11oy.com\n"})
+        violations = self._scan_files({"README.md": b"Visit https://a11oy" + b".com\n"})
         self.assertEqual(len(violations), 1)
         self.assertIn("README.md:1:Visit https://a11oy.com", violations[0])
 
