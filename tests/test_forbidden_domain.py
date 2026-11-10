@@ -67,6 +67,13 @@ class ForbiddenDomainScannerTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "no files"):
                     checker.tracked_files(Path(directory))
 
+    def test_invalid_utf8_path_is_an_error(self) -> None:
+        completed = mock.Mock(returncode=0, stdout=b"bad\xff\0", stderr=b"")
+        with tempfile.TemporaryDirectory() as directory:
+            with mock.patch.object(checker.subprocess, "run", return_value=completed):
+                with self.assertRaisesRegex(RuntimeError, "invalid UTF-8 filename"):
+                    checker.tracked_files(Path(directory))
+
     def test_main_reports_failure_closed(self) -> None:
         with mock.patch.object(checker, "scan", side_effect=RuntimeError("scan unavailable")):
             output = io.StringIO()
