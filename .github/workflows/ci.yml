@@ -66,16 +66,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Find and parse every JSON file
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          found=0
-          for f in $(find . -name "*.json" -not -path "./.git/*"); do
-            found=$((found + 1))
-            python3 -m json.tool "$f" > /dev/null || { echo "::error file=$f::Invalid JSON"; exit 1; }
-          done
-          echo "Validated $found JSON files."
+      - name: Find and parse every JSON file with strict semantics
+        run: python3 scripts/validate_json_strict.py --root .
 
   chain-integrity:
     name: Offline chain-integrity verifier
