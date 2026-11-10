@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -36,6 +37,35 @@ SCRIPT_NAME = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z")
 VERSION_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z")
 BINDING = re.compile(r"([A-Z][A-Z0-9_]{0,63}):([a-z_]{1,64})\Z")
 MAX_RESPONSE_BYTES = 1_000_000
+
+
+def _reject_duplicate_keys(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON object key")
+        value[key] = item
+    return value
+
+
+def _reject_nonfinite_constant(_value):
+    raise ValueError("non-finite JSON number")
+
+
+def _parse_finite_float(value):
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("non-finite JSON number")
+    return number
+
+
+def _strict_json(content):
+    return json.loads(
+        content,
+        object_pairs_hook=_reject_duplicate_keys,
+        parse_constant=_reject_nonfinite_constant,
+        parse_float=_parse_finite_float,
+    )
 
 
 class NoRedirectHandler(HTTPRedirectHandler):
@@ -80,7 +110,7 @@ def api_get(path: str, token: str, *, timeout: float = 15.0) -> dict:
     if len(content) > MAX_RESPONSE_BYTES:
         raise ReadbackError("RESPONSE_TOO_LARGE")
     try:
-        payload = json.loads(content)
+        payload = _strict_json(content)
     except (UnicodeError, ValueError):
         raise ReadbackError("INVALID_RESPONSE", "body is not JSON") from None
     if not isinstance(payload, dict) or payload.get("success") is not True:
