@@ -190,6 +190,11 @@ is silently skipped. The adversarial suite in `tests/test_verify_chain.py`
 (run: `python3 -m unittest discover -s tests`) mutates a copy of the real E4
 artifacts and asserts every such tampering is rejected.
 
+Duplicate JSON member names are rejected in every ledger, trace, manifest, and
+optional final-receipt object, including nested objects, identical values, and
+escaped spellings that decode to the same name. This prevents a parser's
+last-value-wins behavior from silently hiding conflicting artifact fields.
+
 State hashes in the ledger, trace (previous and next), and manifest anchor must
 be 32-character lowercase hexadecimal strings, matching the historical E4 run
 format. Nulls, non-string values, and malformed hash strings are rejected before

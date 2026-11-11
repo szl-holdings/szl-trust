@@ -49,6 +49,22 @@ class ChainError(Exception):
     """Raised on any integrity violation — the caller treats this as fail-closed."""
 
 
+def _unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON member {key!r}")
+        result[key] = value
+    return result
+
+
+def _load_json(text: str, context: str) -> Any:
+    try:
+        return json.loads(text, object_pairs_hook=_unique_members)
+    except ValueError as exc:
+        raise ChainError(f"{context}: malformed JSON ({exc})") from exc
+
+
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     """Parse a JSONL file fail-closed.
 
@@ -65,10 +81,7 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     for lineno, line in enumerate(lines, start=1):
         if line.strip() == "":
             raise ChainError(f"{path.name}:{lineno}: blank line inside JSONL body (rejected)")
-        try:
-            obj = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise ChainError(f"{path.name}:{lineno}: malformed JSON ({exc.msg})") from exc
+        obj = _load_json(line, f"{path.name}:{lineno}")
         if not isinstance(obj, dict):
             raise ChainError(f"{path.name}:{lineno}: expected a JSON object, got {type(obj).__name__}")
         records.append(obj)
@@ -173,10 +186,7 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
     manifest_path = run / "run_manifest.json"
     if not manifest_path.is_file():
         raise ChainError("run_manifest.json is missing")
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise ChainError(f"run_manifest.json: malformed JSON ({exc.msg})") from exc
+    manifest = _load_json(manifest_path.read_text(encoding="utf-8"), "run_manifest.json")
     if not isinstance(manifest, dict):
         raise ChainError("run_manifest.json: expected a JSON object")
     manifest_final = _require_state_hash(manifest, "final_state_hash", "run_manifest.json")
@@ -189,10 +199,7 @@ def verify_run(run_dir: str | Path) -> dict[str, Any]:
     # (7) top-level decision_receipt.json cross-check (if present)
     dr_path = run / "decision_receipt.json"
     if dr_path.is_file():
-        try:
-            dr = json.loads(dr_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            raise ChainError(f"decision_receipt.json: malformed JSON ({exc.msg})") from exc
+        dr = _load_json(dr_path.read_text(encoding="utf-8"), "decision_receipt.json")
         if not isinstance(dr, dict):
             raise ChainError("decision_receipt.json: expected a JSON object")
         last = _require(dr, "last_receipt", "decision_receipt.json")
