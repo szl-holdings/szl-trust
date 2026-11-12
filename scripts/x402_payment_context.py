@@ -65,14 +65,16 @@ MAX_SAFE_INTEGER = 2**53 - 1
 # Evidence snapshot SKU. Price and audience follow
 # docs/monetization/evidence-snapshot-activation-2026-11-02.md and the Worker
 # constants in ops/evidence-snapshot-worker/src/index.mjs
-# (tests/test_x402_price_alignment.py keeps the three in step). Not offered yet:
-# no Monetization Gateway rule exists for this path, the Worker is not
-# deployed, and the apex host is a free website under the 2026-11-06 owner
-# policy, so the endpoint has to move to an API host before activation.
-EVIDENCE_SNAPSHOT_AUDIENCE = "https://a-11-oy.com/api/v1/evidence-snapshot"
+# (tests/test_x402_price_alignment.py keeps the three in step).
+# Owner decision (2026-11-12): api.a-11-oy.com hosts the route; the apex stays
+# a free website. Not offered yet: the activation record names a payTo, but
+# asset, network, and a matching Gateway rule are not recorded, and promotion
+# gates stay BLOCKED. This path must not be described as a payable HTTP 402.
+# The catalog price below is the future offer, not a live charge.
+EVIDENCE_SNAPSHOT_AUDIENCE = "https://api.a-11-oy.com/v1/evidence-snapshot"
 EVIDENCE_SNAPSHOT_AMOUNT_ATOMIC = 1_000_000
 EVIDENCE_SNAPSHOT_SCHEME = "exact"
-PAID_PATH = "/api/v1/evidence-snapshot"
+PAID_PATH = "/v1/evidence-snapshot"
 FREE_PATHS = frozenset({
     "/",
     "/healthz",
@@ -619,7 +621,13 @@ def emit_production_settlement(**_kwargs: object) -> None:
 
 
 def decide_delivery(*, path: str, method: str, context: dict | None) -> dict:
-    """Fail closed. A valid context still does not deliver paid bytes."""
+    """Fail closed. The evidence-snapshot SKU is not offered.
+
+    A missing context is ``NOT_OFFERED`` (403, no ``accepts`` list). A present
+    context still does not deliver paid bytes (``COMMERCIAL_NOT_ENABLED``).
+    This function does not emit HTTP 402: a payable 402 needs a receiving
+    wallet, and none is recorded.
+    """
     reject_blanket_rule(path)
     if production_charging_enabled() is not False:
         raise PaymentHold("ACTIVATION_PATH_INVALID")
@@ -640,10 +648,19 @@ def decide_delivery(*, path: str, method: str, context: dict | None) -> dict:
             "settlement": None,
         }
     if path == PAID_PATH and method in {"GET", "HEAD"}:
-        state = "COMMERCIAL_NOT_ENABLED" if context else "UNPAID"
+        # Catalog status is "not offered yet". HTTP 402 would advertise a
+        # payment option this repository cannot construct (no payTo).
+        if not context:
+            return {
+                "http_status": 403,
+                "state": "NOT_OFFERED",
+                "body": None,
+                "cache_control": "private, no-store",
+                "settlement": None,
+            }
         return {
-            "http_status": 403 if context else 402,
-            "state": state,
+            "http_status": 403,
+            "state": "COMMERCIAL_NOT_ENABLED",
             "body": None,
             "cache_control": "private, no-store",
             "settlement": None,

@@ -84,7 +84,7 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 | `runs/E4-codex-kernel-2026-04-29/trace.jsonl` | 12 execution spans — all `mocked:false` |
 | `runs/E4-codex-kernel-2026-04-29/deployment_contract.json` | Deployment contract (platform: replit, repo_commit anchored) |
 | `runs/E4-codex-kernel-2026-04-29/decision_receipt.json` | Canonical decision receipt |
-| `ops/evidence-snapshot-worker/` | Cloudflare Worker source for the paid evidence-snapshot route (not in the account's Workers list on 2026-11-06) |
+| `ops/evidence-snapshot-worker/` | Cloudflare Worker source for `GET https://api.a-11-oy.com/v1/evidence-snapshot`. The SKU is not offered yet (no Gateway rule, no `accepts` list). |
 | `ops/revenue-tracker-worker/` | `szl-revenue-tracker` Worker: records only verified `PAYMENT-CONTEXT` authorizations and origin-reported settlements; no route by default |
 
 ## Honesty scope
@@ -231,7 +231,8 @@ python3 tools/x402_payment_context_vectors.py --check
 (cd ops/evidence-snapshot-worker && npm ci && npm test)
 ```
 
-In this repository they are wired only to the evidence snapshot, which is not
-offered: no Gateway rule exists for it, and its apex route must move to an API
-host first (see
+In this repository they are wired only to the evidence snapshot. Owner decision
+(2026-11-12): that route is `https://api.a-11-oy.com/v1/evidence-snapshot` and
+the apex stays free. The SKU is not offered yet: no Gateway rule and no
+receiving wallet are recorded, and the origin does not return HTTP 402 (see
 `docs/monetization/evidence-snapshot-activation-2026-11-02.md`).

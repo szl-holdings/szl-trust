@@ -98,8 +98,10 @@ class PaymentContextTests(unittest.TestCase):
 
     def test_missing_context_does_not_unlock(self):
         decision = decide_delivery(path=PAID_PATH, method="GET", context=None)
-        self.assertEqual(decision["state"], "UNPAID")
+        self.assertEqual(decision["state"], "NOT_OFFERED")
+        self.assertEqual(decision["http_status"], 403)
         self.assertIsNone(decision["body"])
+        self.assertNotIn("accepts", decision)
         self.assertIsNone(decision["settlement"])
         self.assertIn("no-store", decision["cache_control"])
         self.assertEqual(self.reason(None), "ABSENT")
@@ -238,8 +240,14 @@ class PaymentContextTests(unittest.TestCase):
     def test_request_url_must_name_the_audience(self):
         token = mint(self.left)
         self.assertEqual(self.validate(token, request_url=AUD + "?probe=1")["audience"], AUD)
-        for url in (AUD + "/extra", AUD.replace("https:", "http:"), "https://api.a-11-oy.com/api/v1/evidence-snapshot",
-                    "https://user@a-11-oy.com/api/v1/evidence-snapshot"):
+        for url in (
+            AUD + "/extra",
+            AUD.replace("https:", "http:"),
+            "https://api.a-11-oy.com/api/v1/evidence-snapshot",
+            "https://a-11-oy.com/api/v1/evidence-snapshot",
+            "https://a-11-oy.com/v1/evidence-snapshot",
+            "https://user@a-11-oy.com/api/v1/evidence-snapshot",
+        ):
             self.assertEqual(self.reason(token, request_url=url), "REQUEST_NOT_AUDIENCE")
 
     def test_replay_guard_is_opt_in_and_bounded(self):
@@ -266,9 +274,15 @@ class PaymentContextTests(unittest.TestCase):
             MemoryReplayGuard(max_entries=0)
 
     def test_routes_are_exact_and_free_paths_stay_free(self):
+        self.assertEqual(PAID_PATH, "/v1/evidence-snapshot")
+        self.assertEqual(AUD, "https://api.a-11-oy.com/v1/evidence-snapshot")
         self.assertTrue(is_explicit_paid_path(PAID_PATH, "GET"))
         self.assertFalse(is_explicit_paid_path(PAID_PATH, "POST"))
-        self.assertFalse(is_explicit_paid_path("/api/v1/evidence-snapshot/extra", "GET"))
+        self.assertFalse(is_explicit_paid_path("/v1/evidence-snapshot/extra", "GET"))
+        self.assertFalse(is_explicit_paid_path("/api/v1/evidence-snapshot", "GET"))
+        retired = decide_delivery(path="/api/v1/evidence-snapshot", method="GET", context=None)
+        self.assertEqual(retired["state"], "NOT_A_PAID_ROUTE")
+        self.assertEqual(retired["http_status"], 404)
         with self.assertRaises(PaymentHold):
             reject_blanket_rule("/*")
         free = decide_delivery(path="/healthz", method="GET", context=None)
@@ -278,8 +292,10 @@ class PaymentContextTests(unittest.TestCase):
         self.assertEqual(options["state"], "DISCOVERY")
         self.assertIsNone(options["body"])
         head = decide_delivery(path=PAID_PATH, method="HEAD", context=None)
-        self.assertEqual(head["state"], "UNPAID")
+        self.assertEqual(head["state"], "NOT_OFFERED")
+        self.assertEqual(head["http_status"], 403)
         self.assertIsNone(head["body"])
+        self.assertNotIn("accepts", head)
 
     def test_contract_document_remains_unapproved(self):
         text = (ROOT / "docs" / "monetization" /

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { AMOUNT_ATOMIC, AUDIENCE, INPUTS, SOURCE_REVISION, handleRequest } from "../src/index.mjs";
+import { AMOUNT_ATOMIC, AUDIENCE, INPUTS, OFFERED, SOURCE_REVISION, handleRequest } from "../src/index.mjs";
 import { PaymentContextError } from "../src/payment-context.mjs";
 
 function request({ method = "GET", url = AUDIENCE, token } = {}) {
@@ -9,17 +9,44 @@ function request({ method = "GET", url = AUDIENCE, token } = {}) {
   return new Request(url, { method, headers });
 }
 
-test("missing payment context fails closed", async () => {
-  const response = await handleRequest(request());
-  assert.equal(response.status, 402);
-  assert.deepEqual(await response.json(), {
-    state: "PAYMENT_REQUIRED",
-    sku: "evidence_snapshot_v1"
+test("the deployed route is not offered and returns no payment options", async () => {
+  assert.equal(OFFERED, false);
+  let calls = 0;
+  for (const token of [undefined, "secret-payment-token"]) {
+    const response = await handleRequest(request({ token }), {
+      verify: async () => { calls += 1; return {}; }
+    });
+    assert.equal(response.status, 403);
+    assert.equal(response.headers.get("PAYMENT-REQUIRED"), null);
+    const body = await response.json();
+    assert.deepEqual(body, {
+      state: "NOT_OFFERED",
+      sku: "evidence_snapshot_v1",
+      resource: AUDIENCE,
+      offered: false
+    });
+    assert.equal(Object.hasOwn(body, "accepts"), false);
+    assert.equal(body.resource, "https://api.a-11-oy.com/v1/evidence-snapshot");
+  }
+  assert.equal(calls, 0);
+});
+
+test("an enabled offer still fails closed without a bare 402 when the token is absent", async () => {
+  const response = await handleRequest(request(), { offered: true });
+  assert.equal(response.status, 403);
+  const body = await response.json();
+  assert.deepEqual(body, {
+    state: "PAYMENT_CONTEXT_ABSENT",
+    sku: "evidence_snapshot_v1",
+    resource: "https://api.a-11-oy.com/v1/evidence-snapshot"
   });
+  assert.equal(Object.hasOwn(body, "accepts"), false);
+  assert.equal(response.headers.get("PAYMENT-REQUIRED"), null);
 });
 
 test("invalid payment context fails closed without echoing the token", async () => {
   const response = await handleRequest(request({ token: "secret-payment-token" }), {
+    offered: true,
     verify: async () => { throw new Error("invalid"); }
   });
   assert.equal(response.status, 403);
@@ -29,6 +56,7 @@ test("invalid payment context fails closed without echoing the token", async () 
 test("a verified exact payment returns the bounded ten-input manifest", async () => {
   let observedToken;
   const response = await handleRequest(request({ token: "verified-token" }), {
+    offered: true,
     verify: async (token) => { observedToken = token; return {}; }
   });
   assert.equal(observedToken, "verified-token");
@@ -45,7 +73,7 @@ test("a verified exact payment returns the bounded ten-input manifest", async ()
 });
 
 test("the package digest is deterministic", async () => {
-  const options = { verify: async () => ({}) };
+  const options = { offered: true, verify: async () => ({}) };
   const first = await (await handleRequest(request({ token: "one" }), options)).json();
   const second = await (await handleRequest(request({ token: "two" }), options)).json();
   assert.equal(first.package_sha256, second.package_sha256);
@@ -53,6 +81,7 @@ test("the package digest is deterministic", async () => {
 
 test("manifest notices distinguish historical public payload from operational processing", async () => {
   const response = await handleRequest(request({ token: "notice-test" }), {
+    offered: true,
     verify: async () => ({})
   });
   const body = await response.json();
@@ -114,12 +143,17 @@ test("logs carry a reason code or the package digest, never the token or an erro
   console.log = (line) => { lines.push(String(line)); };
   try {
     await handleRequest(request({ token: "secret-token-one" }), {
+      offered: true,
       verify: async () => { throw new PaymentContextError("AMOUNT_MISMATCH"); }
     });
     await handleRequest(request({ token: "secret-token-two" }), {
+      offered: true,
       verify: async (token) => { throw new Error(`echo ${token}`); }
     });
-    await handleRequest(request({ token: "secret-token-three" }), { verify: async () => ({}) });
+    await handleRequest(request({ token: "secret-token-three" }), {
+      offered: true,
+      verify: async () => ({})
+    });
   } finally {
     console.log = original;
   }
