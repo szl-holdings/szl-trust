@@ -1,6 +1,6 @@
 # SZL evidence snapshot Worker
 
-> **Not offered yet; do not deploy on the apex.** Owner policy (2026-11-06):
+> **API host selected (2026-11-12): api.a-11-oy.com. The apex stays free.** Owner policy (2026-11-06):
 > charge API and MCP hosts only; websites (including `a-11-oy.com`), pricing,
 > the proof site, health and well-known paths stay free. The route below is on
 > the apex website host, so it has to move to an API host (owner decision)
@@ -9,7 +9,7 @@
 
 This Worker serves one bounded paid route:
 
-`GET https://a-11-oy.com/api/v1/evidence-snapshot` (to move to an API host)
+`GET https://api.a-11-oy.com/v1/evidence-snapshot` (owner decision made 2026-11-12: api.a-11-oy.com)
 
 It fails closed unless Cloudflare Monetization Gateway supplies a valid
 Ed25519 `PAYMENT-CONTEXT` JWT for the exact audience and the fixed

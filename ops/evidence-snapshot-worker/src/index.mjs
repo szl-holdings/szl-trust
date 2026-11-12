@@ -6,7 +6,7 @@ export { JWKS_URL } from "./payment-keys.mjs";
 // Not offered yet: no Gateway rule exists for this path and the apex host is a
 // free website under the 2026-11-06 owner policy, so the route must move to an
 // API host (owner decision) before deployment.
-export const AUDIENCE = "https://a-11-oy.com/api/v1/evidence-snapshot";
+export const AUDIENCE = "https://api.a-11-oy.com/v1/evidence-snapshot";
 export const AMOUNT_ATOMIC = "1000000";
 export const SCHEME = "exact";
 export const SOURCE_REVISION = "44a384b63e2cc2c6820e8044d3485fc8ee3070f3";
