@@ -1,23 +1,24 @@
 # SZL evidence snapshot Worker
 
-> **Not offered yet. Owner decision (2026-11-12): `api.a-11-oy.com` hosts the route; the apex stays free.** Owner policy (2026-11-06):
+> **Offered in source (`OFFERED = true`). Owner decision (2026-11-12): `api.a-11-oy.com` hosts the route; the apex stays free.** Owner policy (2026-11-06):
 > charge API and MCP hosts only; websites (including `a-11-oy.com`), pricing,
-> the proof site, health and well-known paths stay free. The approved payTo is
-> recorded in the activation record, and promotion gates stay BLOCKED until the
-> dashboard matches it, so the origin does not return HTTP 402
-> or an x402 `accepts` list. See
+> the proof site, health and well-known paths stay free. The approved payTo and
+> exact Gateway rule `8f6c7d526b7c4a42a1075671898474b9` are recorded in the
+> activation record. Re-enable that rule after merge and Worker redeploy. The
+> origin does not return HTTP 402 or an x402 `accepts` list; Cloudflare issues
+> the 402 when the rule is enabled. See
 > [the activation record](../../docs/monetization/evidence-snapshot-activation-2026-11-02.md).
 
 This Worker source describes one bounded route:
 
 `GET https://api.a-11-oy.com/v1/evidence-snapshot` (owner decision made 2026-11-12: api.a-11-oy.com)
 
-The route is not offered yet. `OFFERED` is false, and a request to that exact
-URL returns `403` with `state` `NOT_OFFERED`. It does not return a payment
-requirement. When offering is later enabled, the handler fails closed unless
-Cloudflare Monetization Gateway supplies a valid Ed25519 `PAYMENT-CONTEXT`
-JWT for the exact audience and the fixed `$1.00` amount (`1,000,000` atomic
-units). The paid response is a deterministic
+The route is offered in source. `OFFERED` is true, and a request to that exact
+URL without a valid `PAYMENT-CONTEXT` returns `403` with `state`
+`PAYMENT_CONTEXT_ABSENT`. The origin does not return a payment requirement.
+The handler fails closed unless Cloudflare Monetization Gateway supplies a
+valid Ed25519 `PAYMENT-CONTEXT` JWT for the exact audience and the fixed
+`$1.00` amount (`1,000,000` atomic units). The paid response is a deterministic
 manifest of ten public, revision-pinned SZL Trust artifacts. It does not
 serve private content, execute models, or claim that the cited receipts are
 scientifically or commercially valid.
@@ -110,13 +111,14 @@ deployment settings to override the pinned certificate URL or trust policy.
 0. Owner decision on the API host: done (2026-11-12). The Worker `AUDIENCE`
    and route, `EVIDENCE_SNAPSHOT_AUDIENCE` in `scripts/x402_payment_context.py`,
    and the activation record name `https://api.a-11-oy.com/v1/evidence-snapshot`
-   (`tests/test_x402_price_alignment.py` checks them). The SKU stays unoffered
-   until a receiving wallet and an exact Gateway rule exist. The origin does
-   not return HTTP 402 in the meantime.
+   (`tests/test_x402_price_alignment.py` checks them). The SKU is offered in
+   source. Exact Gateway rule `8f6c7d526b7c4a42a1075671898474b9` already exists
+   and is disabled. The origin does not return HTTP 402; Cloudflare does when
+   the rule is enabled.
 1. Review and merge the source change.
 2. Deploy the Worker with the pinned Wrangler version.
 3. Verify the direct origin fails closed without `PAYMENT-CONTEXT`.
-4. Create one Cloudflare Monetization Gateway rule for the exact GET path.
+4. Re-enable Cloudflare Monetization Gateway rule `8f6c7d52` for the exact GET path.
 5. Verify an unpaid request receives Cloudflare's `402` and decoded payment
    requirements show `$1.00` and the approved receiving wallet.
 6. Run one controlled paid canary and reconcile settlement before promotion.

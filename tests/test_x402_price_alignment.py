@@ -44,7 +44,7 @@ class PriceAlignmentTests(unittest.TestCase):
         self.assertTrue(validator.EVIDENCE_SNAPSHOT_AUDIENCE.endswith(validator.PAID_PATH))
         self.assertTrue(validator.EVIDENCE_SNAPSHOT_AUDIENCE.startswith("https://api.a-11-oy.com"))
         source = (WORKER / "src" / "index.mjs").read_text(encoding="utf-8")
-        self.assertRegex(source, r"(?m)^export const OFFERED = false;$")
+        self.assertRegex(source, r"(?m)^export const OFFERED = true;$")
         self.assertIn('state: "NOT_OFFERED"', source)
         self.assertNotIn("json(402", source)
         self.assertNotIn("PAYMENT_REQUIRED", source)
@@ -60,15 +60,17 @@ class PriceAlignmentTests(unittest.TestCase):
         self.assertIn(f"`{validator.EVIDENCE_SNAPSHOT_SCHEME}`", text)
         self.assertIn(f"`{validator.EVIDENCE_SNAPSHOT_AUDIENCE}`", text)
 
-    def test_activation_record_keeps_the_apex_free_and_the_sku_unoffered(self):
+    def test_activation_record_keeps_the_apex_free_and_records_the_offered_sku(self):
         text = ACTIVATION.read_text(encoding="utf-8")
-        self.assertIn("**not offered yet**", text)
+        self.assertIn("**offered in source**", text)
         self.assertIn("charge API and MCP hosts only", text)
         self.assertIn("free website host", text)
         self.assertIn("owner decision", text)
         self.assertIn("`https://api.a-11-oy.com/v1/evidence-snapshot`", text)
         self.assertIn("does not return HTTP `402`", text)
         self.assertIn("`NOT_OFFERED`", text)
+        self.assertIn("`8f6c7d526b7c4a42a1075671898474b9`", text)
+        self.assertIn("Re-enable rule `8f6c7d52`", text)
         approved = "0x7b133ef996852c223379d6d1245430300970291A"
         unclaimed = "0x50E9B335ac233fcc5e87404367E7De253A63D460"
         self.assertIn(approved, text)
@@ -79,11 +81,12 @@ class PriceAlignmentTests(unittest.TestCase):
         self.assertNotIn(approved, worker)
         readme = (WORKER / "README.md").read_text(encoding="utf-8")
         self.assertIn(
-            "Not offered yet. Owner decision (2026-11-12): `api.a-11-oy.com` hosts the route; the apex stays free.",
+            "Offered in source (`OFFERED = true`). Owner decision (2026-11-12): `api.a-11-oy.com` hosts the route; the apex stays free.",
             readme,
         )
         self.assertIn("https://api.a-11-oy.com/v1/evidence-snapshot", readme)
         self.assertIn("does not return HTTP 402", readme)
+        self.assertIn("8f6c7d526b7c4a42a1075671898474b9", readme)
 
 
 if __name__ == "__main__":
