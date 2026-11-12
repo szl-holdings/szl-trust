@@ -69,3 +69,12 @@ settled transaction.
 Gross revenue equals completed settlements, not total domain requests or 402
 prompts. Fees, refunds, taxes, and withdrawal costs must be measured before
 reporting net revenue.
+
+
+## Owner wallet decision, 2026-11-12: the payTo address is corrected
+
+**The approved receiving wallet is `0x7b133ef996852c223379d6d1245430300970291A`** (the owner's wallet, confirmed 2026-11-12).
+
+**The address `0x50E9B335ac233fcc5e87404367E7De253A63D460` is UNCLAIMED**: no estate repo, receipt, or record documents its origin; it was configured in the dashboard by a prior session without provenance. Every Gateway rule that still lists it must be updated to the owner's wallet before any paid traffic is accepted. Until the dashboard matches this record, the promotion gates are BLOCKED — no canary, no revenue claim.
+
+This is the receipts doctrine applied to the payment path: the most critical address in the estate's revenue rail is now documented in the source, dated, and owned — and the undocumented one is named as what it is.
