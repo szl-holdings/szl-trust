@@ -1,19 +1,23 @@
 # SZL evidence snapshot Worker
 
-> **API host selected (2026-11-12): api.a-11-oy.com. The apex stays free.** Owner policy (2026-11-06):
+> **Not offered yet. Owner decision (2026-11-12): `api.a-11-oy.com` hosts the route; the apex stays free.** Owner policy (2026-11-06):
 > charge API and MCP hosts only; websites (including `a-11-oy.com`), pricing,
-> the proof site, health and well-known paths stay free. The route below is on
-> the apex website host, so it has to move to an API host (owner decision)
-> before deployment, and no Monetization Gateway rule exists for it. See
+> the proof site, health and well-known paths stay free. The approved payTo is
+> recorded in the activation record, and promotion gates stay BLOCKED until the
+> dashboard matches it, so the origin does not return HTTP 402
+> or an x402 `accepts` list. See
 > [the activation record](../../docs/monetization/evidence-snapshot-activation-2026-11-02.md).
 
-This Worker serves one bounded paid route:
+This Worker source describes one bounded route:
 
 `GET https://api.a-11-oy.com/v1/evidence-snapshot` (owner decision made 2026-11-12: api.a-11-oy.com)
 
-It fails closed unless Cloudflare Monetization Gateway supplies a valid
-Ed25519 `PAYMENT-CONTEXT` JWT for the exact audience and the fixed
-`$1.00` amount (`1,000,000` atomic units). The response is a deterministic
+The route is not offered yet. `OFFERED` is false, and a request to that exact
+URL returns `403` with `state` `NOT_OFFERED`. It does not return a payment
+requirement. When offering is later enabled, the handler fails closed unless
+Cloudflare Monetization Gateway supplies a valid Ed25519 `PAYMENT-CONTEXT`
+JWT for the exact audience and the fixed `$1.00` amount (`1,000,000` atomic
+units). The paid response is a deterministic
 manifest of ten public, revision-pinned SZL Trust artifacts. It does not
 serve private content, execute models, or claim that the cited receipts are
 scientifically or commercially valid.
@@ -103,9 +107,12 @@ deployment settings to override the pinned certificate URL or trust policy.
 
 ## Deploy sequence
 
-0. Owner decision on the API host. Change the Worker `AUDIENCE` and route,
-   `EVIDENCE_SNAPSHOT_AUDIENCE` in `scripts/x402_payment_context.py` and the
-   activation record together (`tests/test_x402_price_alignment.py` checks them).
+0. Owner decision on the API host: done (2026-11-12). The Worker `AUDIENCE`
+   and route, `EVIDENCE_SNAPSHOT_AUDIENCE` in `scripts/x402_payment_context.py`,
+   and the activation record name `https://api.a-11-oy.com/v1/evidence-snapshot`
+   (`tests/test_x402_price_alignment.py` checks them). The SKU stays unoffered
+   until a receiving wallet and an exact Gateway rule exist. The origin does
+   not return HTTP 402 in the meantime.
 1. Review and merge the source change.
 2. Deploy the Worker with the pinned Wrangler version.
 3. Verify the direct origin fails closed without `PAYMENT-CONTEXT`.

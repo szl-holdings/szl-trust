@@ -6,9 +6,10 @@ This note does not accept terms, name a receiving wallet, or set a live price.
 > Superseded on price and host. The 2026-11-02 activation record
 > (`evidence-snapshot-activation-2026-11-02.md`) records the owner-selected
 > price of `$1.00` (`1,000,000` atomic units), which the Worker and
-> `scripts/x402_payment_context.py` now share. Under the 2026-11-06 owner
-> policy the apex website host stays free, so the endpoint must move to an API
-> host before activation. The 10,000-unit amount below is kept as history.
+> `scripts/x402_payment_context.py` now share. Owner decision (2026-11-12):
+> the host is `https://api.a-11-oy.com/v1/evidence-snapshot`. The apex website
+> host stays free, and the SKU remains not offered yet. The 10,000-unit amount
+> below is kept as history. The path in the table is the 2026-10-09 proposal.
 
 The implementation contract remains
 `docs/monetization/x402-commercial-readiness-2026-10-08.md`.
