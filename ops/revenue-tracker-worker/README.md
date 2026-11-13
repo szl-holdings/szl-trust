@@ -1,5 +1,11 @@
 # SZL revenue tracker Worker
 
+> **Not the deployed source.** This `szl-trust` copy is not canonical.
+> The live Worker `szl-revenue-tracker` matches
+> [`a11oy/ops/revenue-tracker-worker`](https://github.com/szl-holdings/a11oy/tree/main/ops/revenue-tracker-worker)
+> (compatibility date `2024-09-01`, routes `/v1/*` and `/api/a11oy/v1/*`).
+> See [NOT_CANONICAL.md](NOT_CANONICAL.md).
+
 `szl-revenue-tracker` is a transparent pass-through Worker that records x402
 payment events to a Workers Analytics Engine dataset. It counts a payment only
 when it can check the payment itself:
