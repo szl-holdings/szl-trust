@@ -19,8 +19,12 @@ The szl-trust copy remains in the tree for history and comparison only.
 Do not treat it as the GitOps source of the live Worker. Do not delete it
 in this change.
 
-This note lives under `docs/` on purpose. Any change under
-`ops/revenue-tracker-worker/**` triggers
-`.github/workflows/revenue-tracker-worker.yml`, whose `deploy` job runs on
-push to `main` and would publish the non-canonical copy. A docs-only change
-here does not match that workflow's `on.paths` filter.
+The duplicate push-triggered deployment was disabled by PR #122 on
+2026-11-13. The szl-trust workflow is now manual-only, requires an explicit
+operator override, and targets the separate, unrouted
+`szl-revenue-tracker-trust-candidate` Worker. It does not replace the canonical
+Worker on a push to `main`. Keep production changes in the a11oy source.
+
+The deployment annotation and routes above were read back from Cloudflare
+on 2026-11-13. The annotation identifies the reported source; it is not an
+independent byte-for-byte attestation of the deployed Worker bundle.
