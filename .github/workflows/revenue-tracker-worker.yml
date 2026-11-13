@@ -1,3 +1,9 @@
+# SUSPENDED (Saywa pass 2 draft, pending CTO/CFO decision): the live
+# szl-revenue-tracker Worker is owned by szl-holdings/a11oy
+# (ops/revenue-tracker-worker, routes a-11-oy.com/v1/* and /api/a11oy/v1/*).
+# Two repos deploying one script name means whichever merges last silently
+# replaces the other. Deploys from this repo are manual-only and refuse to run
+# unless the operator types the script owner override below.
 # GitOps for the szl-revenue-tracker Worker: test every change, deploy only the
 # exact commit that reached main, then fail unless the Workers API shows that
 # exact 40-character SHA serving 100% of the Worker's traffic. The Worker has no
@@ -13,15 +19,12 @@ on:
       - 'ops/evidence-snapshot-worker/src/payment-keys.mjs'
       - 'scripts/verify_worker_deployment.py'
       - 'tests/test_verify_worker_deployment.py'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/revenue-tracker-worker.yml'
-      - 'ops/revenue-tracker-worker/**'
-      - 'ops/evidence-snapshot-worker/src/payment-keys.mjs'
-      - 'scripts/verify_worker_deployment.py'
-      - 'tests/test_verify_worker_deployment.py'
   workflow_dispatch:
+    inputs:
+      confirm_owner_override:
+        description: "Type I-OWN-szl-revenue-tracker to deploy from szl-trust (CTO approval required)"
+        required: true
+        default: ""
 
 permissions:
   contents: read
@@ -76,7 +79,7 @@ jobs:
 
   deploy:
     name: Deploy szl-revenue-tracker and read back its revision
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirm_owner_override == 'I-OWN-szl-revenue-tracker'
     needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 15

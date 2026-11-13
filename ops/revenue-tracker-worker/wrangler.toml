@@ -2,7 +2,9 @@
 # No secrets: the Worker needs none. SOURCE_REVISION is injected by the deploy
 # workflow as the full 40-character commit SHA (`--var`).
 
-name = "szl-revenue-tracker"
+# Renamed so an accidental deploy from this repo creates a separate, unrouted
+# Worker instead of replacing the live a11oy-owned szl-revenue-tracker.
+name = "szl-revenue-tracker-trust-candidate"
 main = "src/index.mjs"
 compatibility_date = "2026-08-31"
 
