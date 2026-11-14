@@ -198,6 +198,18 @@ class ApiGetTests(unittest.TestCase):
         with self.assertRaises(readback.ReadbackError) as caught:
             self.get(HTTPError("u", 403, "forbidden", Message(), BytesIO(b"")))
         self.assertIn("Workers Scripts", caught.exception.detail)
+        for malformed in (
+            b'{"success":true,"success":false}',
+            b'{"success":true,"result":{"value":NaN}}',
+            b'{"success":true,"result":{"value":Infinity}}',
+            b'{"success":true,"result":{"value":-Infinity}}',
+            b'{"success":true,"result":{"value":1e999}}',
+        ):
+            with self.subTest(malformed=malformed):
+                with self.assertRaises(readback.ReadbackError) as caught:
+                    self.get(Body(malformed))
+                self.assertEqual(caught.exception.category, "INVALID_RESPONSE")
+                self.assertFalse(caught.exception.retryable)
 
 
 class MainTests(unittest.TestCase):
