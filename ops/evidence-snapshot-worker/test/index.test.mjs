@@ -9,11 +9,26 @@ function request({ method = "GET", url = AUDIENCE, token } = {}) {
   return new Request(url, { method, headers });
 }
 
-test("the deployed route is not offered and returns no payment options", async () => {
-  assert.equal(OFFERED, false);
+test("the deployed route is offered and fails closed without a payment context", async () => {
+  assert.equal(OFFERED, true);
+  const response = await handleRequest(request());
+  assert.equal(response.status, 403);
+  const body = await response.json();
+  assert.deepEqual(body, {
+    state: "PAYMENT_CONTEXT_ABSENT",
+    sku: "evidence_snapshot_v1",
+    resource: "https://api.a-11-oy.com/v1/evidence-snapshot"
+  });
+  assert.equal(Object.hasOwn(body, "accepts"), false);
+  assert.equal(response.headers.get("PAYMENT-REQUIRED"), null);
+});
+
+test("an explicit unoffered flag still returns no payment options", async () => {
+  assert.equal(OFFERED, true);
   let calls = 0;
   for (const token of [undefined, "secret-payment-token"]) {
     const response = await handleRequest(request({ token }), {
+      offered: false,
       verify: async () => { calls += 1; return {}; }
     });
     assert.equal(response.status, 403);

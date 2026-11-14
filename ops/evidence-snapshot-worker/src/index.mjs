@@ -4,15 +4,17 @@ export { JWKS_URL } from "./payment-keys.mjs";
 
 // Owner-selected price per docs/monetization/evidence-snapshot-activation-2026-11-02.md.
 // Owner decision (2026-11-12): api.a-11-oy.com hosts this route; the apex stays free.
-// Not offered yet: the activation record names a payTo, but asset, network,
-// and a matching Gateway rule are not recorded, and promotion gates stay
-// BLOCKED. The origin must not emit HTTP 402 or an x402 `accepts` list.
-// OFFERED stays false until those gates are met. The fetch handler uses that
-// default; tests pass offered: true only to exercise the verifier.
+// Offered in source: the activation record names the approved payTo and the
+// exact Monetization Gateway rule 8f6c7d526b7c4a42a1075671898474b9. Re-enable
+// that rule after this change is merged and the Worker is redeployed. The
+// origin must not emit HTTP 402 or an x402 `accepts` list; Cloudflare issues
+// the 402 when the rule is enabled. Without PAYMENT-CONTEXT the origin fails
+// closed with PAYMENT_CONTEXT_ABSENT. Tests may pass offered: false to cover
+// the unoffered path.
 export const AUDIENCE = "https://api.a-11-oy.com/v1/evidence-snapshot";
 export const AMOUNT_ATOMIC = "1000000";
 export const SCHEME = "exact";
-export const OFFERED = false;
+export const OFFERED = true;
 export const SOURCE_REVISION = "44a384b63e2cc2c6820e8044d3485fc8ee3070f3";
 
 const PUBLIC_RUN_PREFIX =
@@ -144,10 +146,10 @@ export async function handleRequest(request, { verify = verifyPaymentContext, of
   if (`${url.origin}${url.pathname}` !== AUDIENCE || url.search !== "") {
     return json(404, { state: "NOT_FOUND" });
   }
-  // The catalog price is $1.00, but the SKU is not offered. A 402 without an
-  // accepts list is what a client reads as a broken paid endpoint. Asset,
-  // network, and a Gateway rule that matches the approved payTo are not
-  // recorded, so no payment option is returned.
+  // When offering is disabled, return NOT_OFFERED with no payment options.
+  // The origin never emits HTTP 402; a 402 without an accepts list is what a
+  // client reads as a broken paid endpoint. Cloudflare issues the 402 when
+  // Gateway rule 8f6c7d526b7c4a42a1075671898474b9 is enabled.
   if (!offered) {
     return notOffered();
   }
