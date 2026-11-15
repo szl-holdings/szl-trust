@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "szl-trust"
 version = "0.1.0"
-description = "SZL Holdings Public Trust Portal ù Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
+description = "SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "CC-BY-4.0"
