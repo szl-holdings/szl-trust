@@ -25,17 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Scan for forbidden domain references
-        shell: bash
-        run: |
-          set -euo pipefail
-          hits="$(rg -n --no-heading --hidden -P '(?<!-)a11oy\.com' --glob '!.git' . || true)"
-          violations="$(printf '%s' "$hits" | rg -v -i 'never|forbidden|not in|assertNotIn|does not appear|is not a surface|blocklist' || true)"
-          if [ -n "$violations" ]; then
-            echo "::error::Forbidden domain references found (release-blocking CRITICAL)."
-            echo "::error::Replace with a-11-oy.com or remove; guard contexts must say so on the same line."
-            printf '%s\n' "$violations"
-            exit 1
-          fi
-          echo "OK: no forbidden domain references outside guard contexts."
+        run: python3 scripts/check_forbidden_domain.py
