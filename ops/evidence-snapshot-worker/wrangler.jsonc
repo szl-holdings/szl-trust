@@ -5,7 +5,7 @@
   "workers_dev": false,
   "routes": [
     {
-      "pattern": "https://a-11-oy.com/api/v1/evidence-snapshot",
+      "pattern": "https://api.a-11-oy.com/v1/evidence-snapshot",
       "zone_name": "a-11-oy.com"
     }
   ],

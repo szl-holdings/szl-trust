@@ -61,6 +61,7 @@ test("real Ed25519 payment verifies and serves the unchanged manifest", async ()
   });
   assert.match(verified.token_sha256, /^[0-9a-f]{64}$/);
   const result = await handleRequest(new Request(AUDIENCE, { headers: { "PAYMENT-CONTEXT": token } }), {
+    offered: true,
     verify: h.verify
   });
   assert.equal(result.status, 200);

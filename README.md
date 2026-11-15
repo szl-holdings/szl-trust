@@ -22,7 +22,7 @@
 
 [![Doctrine v11](https://img.shields.io/badge/Doctrine-v11_LOCKED-3b82f6?style=flat-square)](https://github.com/szl-holdings/.github/tree/main/doctrine) [![SLSA](https://img.shields.io/badge/SLSA-L1_honest-eab308?style=flat-square)](https://slsa.dev/spec/v1.0/levels) [![License: CC-BY-4.0](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE)
 
-[![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-5b8dee?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276) [![DOI Concept (always-latest)](https://zenodo.org/badge/DOI/10.5281/zenodo.19944926.svg)](https://doi.org/10.5281/zenodo.19944926)
+[![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-5b8dee?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276) [![DOI Concept (always-latest)](https://zenodo.org/badge/DOI/10.5281/zenodo.24239896.svg)](https://doi.org/10.5281/zenodo.24239896)
 
 > **Source-of-truth note (2026-09-22):** The June `docs-site` copy is historical. `szl-trust` owns the published historical artifact bytes and verification material in this repository; `a11oy-net` owns the current proof-site source and deployment evidence for `a11oy.net`. A copied or archived mirror does not establish current runtime alignment.
 
@@ -84,7 +84,7 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 | `runs/E4-codex-kernel-2026-04-29/trace.jsonl` | 12 execution spans — all `mocked:false` |
 | `runs/E4-codex-kernel-2026-04-29/deployment_contract.json` | Deployment contract (platform: replit, repo_commit anchored) |
 | `runs/E4-codex-kernel-2026-04-29/decision_receipt.json` | Canonical decision receipt |
-| `ops/evidence-snapshot-worker/` | Cloudflare Worker source for the paid evidence-snapshot route (not in the account's Workers list on 2026-11-06) |
+| `ops/evidence-snapshot-worker/` | Cloudflare Worker source for `GET https://api.a-11-oy.com/v1/evidence-snapshot`. The SKU is offered in source (`OFFERED = true`); the origin does not return an `accepts` list. |
 | `ops/revenue-tracker-worker/` | `szl-revenue-tracker` Worker: records only verified `PAYMENT-CONTEXT` authorizations and origin-reported settlements; no route by default |
 
 ## Honesty scope
@@ -190,6 +190,11 @@ is silently skipped. The adversarial suite in `tests/test_verify_chain.py`
 (run: `python3 -m unittest discover -s tests`) mutates a copy of the real E4
 artifacts and asserts every such tampering is rejected.
 
+Duplicate JSON member names are rejected in every ledger, trace, manifest, and
+optional final-receipt object, including nested objects, identical values, and
+escaped spellings that decode to the same name. This prevents a parser's
+last-value-wins behavior from silently hiding conflicting artifact fields.
+
 State hashes in the ledger, trace (previous and next), and manifest anchor must
 be 32-character lowercase hexadecimal strings, matching the historical E4 run
 format. Nulls, non-string values, and malformed hash strings are rejected before
@@ -226,7 +231,9 @@ python3 tools/x402_payment_context_vectors.py --check
 (cd ops/evidence-snapshot-worker && npm ci && npm test)
 ```
 
-In this repository they are wired only to the evidence snapshot, which is not
-offered: no Gateway rule exists for it, and its apex route must move to an API
-host first (see
-`docs/monetization/evidence-snapshot-activation-2026-11-02.md`).
+In this repository they are wired only to the evidence snapshot. Owner decision
+(2026-11-12): that route is `https://api.a-11-oy.com/v1/evidence-snapshot` and
+the apex stays free. The SKU is offered in source (`OFFERED = true`). Gateway
+rule `8f6c7d526b7c4a42a1075671898474b9` is the exact `$1.00` rule and should be
+re-enabled after merge and Worker redeploy. The origin does not return HTTP 402
+(see `docs/monetization/evidence-snapshot-activation-2026-11-02.md`).

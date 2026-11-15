@@ -26,10 +26,16 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-HF_BASE="https://huggingface.co/datasets/SZLHOLDINGS/szl-lake/resolve/main"
+HF_BASE="https://huggingface.co/datasets/SZLHOLDINGS/szl-lake/resolve/7d7c2b24b661678766e41e80e7b3f1edf0976c41"
 A11OY_BASE="https://szlholdings-a11oy.hf.space/api/a11oy/v1"
 TRUST_BASE="https://raw.githubusercontent.com/szl-holdings/szl-trust/main"
 LEAN_KERNEL="https://szlholdings-lean-kernel.hf.space/api/lean"
+# Verification keys: commit-pinned URLs plus the committed SHA-256 of the exact key
+# bytes (SCPIN-KEY-1). szl-lake keys/org-cosign.pub and .github keys/cosign.pub are
+# different keys, so each source is accepted only with its own fingerprint.
+LAKE_KEY_SHA256="b066de4081a3a49dd98d830ee68938facb86ffa5a658e71ddfe27b00b00f5dd2"
+GH_KEY_URL="https://raw.githubusercontent.com/szl-holdings/.github/1c93da6d81e36f5205ad8f9c067fe6f0f69e2b75/keys/cosign.pub"
+GH_KEY_SHA256="fb5ae41a824ad803f070bdedd89194f77ff83d334671fa47e6113cdadc551314"
 
 RECEIPT_ID="${1:-rcpt-E4-codex-kernel-governed-loop-unified-replit-all-in-one-0012}"
 TMPDIR_LOCAL=$(mktemp -d)
@@ -47,19 +53,27 @@ echo ""
 # ---------------------------------------------------------------------------
 # Step 1: Fetch the org cosign public key from szl-lake (canonical)
 # ---------------------------------------------------------------------------
-echo "[1/5] Fetching org cosign public key from szl-lake..."
+echo "[1/5] Fetching org cosign public key from szl-lake (pinned revision)..."
 if curl -fsSL "$HF_BASE/keys/org-cosign.pub" -o "$TMPDIR_LOCAL/szl_cosign.pub" 2>/dev/null; then
-    echo "      ✓ Public key fetched from szl-lake (LIVE)"
+    KEY_SHA256_EXPECTED="$LAKE_KEY_SHA256"
+    echo "      ✓ Public key fetched from szl-lake (LIVE, pinned revision)"
 else
-    # Fallback: fetch from .github cosign.pub
-    echo "      ⚠ szl-lake unavailable — falling back to .github cosign.pub"
-    curl -fsSL "https://raw.githubusercontent.com/szl-holdings/.github/main/keys/cosign.pub" \
+    # Fallback: fetch .github keys/cosign.pub at a pinned commit
+    echo "      ⚠ szl-lake unavailable — falling back to .github keys/cosign.pub (pinned commit)"
+    curl -fsSL "$GH_KEY_URL" \
         -o "$TMPDIR_LOCAL/szl_cosign.pub" 2>/dev/null || {
         echo "      ✗ FAILED: Cannot fetch cosign public key"
         exit 1
     }
+    KEY_SHA256_EXPECTED="$GH_KEY_SHA256"
     echo "      ✓ Public key fetched from .github (fallback)"
 fi
+KEY_SHA256_GOT=$(openssl dgst -sha256 -hex "$TMPDIR_LOCAL/szl_cosign.pub" | awk '{print $NF}')
+if [ "$KEY_SHA256_GOT" != "$KEY_SHA256_EXPECTED" ]; then
+    echo "      ✗ FAILED: public key SHA-256 ${KEY_SHA256_GOT} does not match the committed fingerprint — refusing"
+    exit 1
+fi
+echo "      ✓ Public key SHA-256 matches the committed fingerprint (${KEY_SHA256_EXPECTED:0:16}...)"
 
 # ---------------------------------------------------------------------------
 # Step 2: Fetch the E4 decision receipt from szl-trust
