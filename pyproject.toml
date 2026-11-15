@@ -5,19 +5,24 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "szl-trust"
 version = "0.1.0"
-description = "SZL Holdings Public Trust Portal — Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
+description = "SZL Holdings Public Trust Portal ù Covenant Proof Standard run artifacts, deterministic replay receipts. Doctrine v11 LOCKED (749/14/163)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "CC-BY-4.0"
 authors = [{ name = "Stephen Lutar", email = "stephen@szlholdings.com" }]
-dependencies = ["PyJWT==2.15.0", "cryptography==50.0.0"]
+# The wheel ships only the stdlib-only szl_trust package; requirements.txt stays
+# the operational pin source for repository scripts (PyJWT, cryptography).
+dependencies = []
 
 [project.urls]
 Homepage = "https://a-11-oy.com"
 Repository = "https://github.com/szl-holdings/szl-trust"
 
 [tool.setuptools]
-packages = []
+packages = ["szl_trust"]
+
+[tool.szl.release]
+import_names = ["szl_trust"] # wheel top-level import names; the release gate fails if the built wheel differs
 
 [tool.ruff]
 line-length = 120
