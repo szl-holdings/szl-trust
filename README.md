@@ -22,7 +22,7 @@
 
 [![Doctrine v11](https://img.shields.io/badge/Doctrine-v11_LOCKED-3b82f6?style=flat-square)](https://github.com/szl-holdings/.github/tree/main/doctrine) [![SLSA](https://img.shields.io/badge/SLSA-L1_honest-eab308?style=flat-square)](https://slsa.dev/spec/v1.0/levels) [![License: CC-BY-4.0](https://img.shields.io/badge/license-CC--BY--4.0-C8B26A?style=flat-square)](./LICENSE)
 
-[![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-5b8dee?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276) [![DOI Concept (always-latest)](https://zenodo.org/badge/DOI/10.5281/zenodo.19944926.svg)](https://doi.org/10.5281/zenodo.19944926)
+[![DOI 10.5281/zenodo.20434276 (v18.0)](https://img.shields.io/badge/DOI-zenodo.20434276_v18.0-5b8dee?style=flat-square&logo=doi)](https://doi.org/10.5281/zenodo.20434276) [![DOI Concept (always-latest)](https://zenodo.org/badge/DOI/10.5281/zenodo.24239896.svg)](https://doi.org/10.5281/zenodo.24239896)
 
 > **Source-of-truth note (2026-09-22):** The June `docs-site` copy is historical. `szl-trust` owns the published historical artifact bytes and verification material in this repository; `a11oy-net` owns the current proof-site source and deployment evidence for `a11oy.net`. A copied or archived mirror does not establish current runtime alignment.
 
