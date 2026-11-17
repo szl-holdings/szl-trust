@@ -86,6 +86,7 @@ cat runs/E4-codex-kernel-2026-04-29/trace.jsonl | jq '[.decision_receipt.mocked]
 | `runs/E4-codex-kernel-2026-04-29/decision_receipt.json` | Canonical decision receipt |
 | `ops/evidence-snapshot-worker/` | Cloudflare Worker source for `GET https://api.a-11-oy.com/v1/evidence-snapshot`. The SKU is offered in source (`OFFERED = true`); the origin does not return an `accepts` list. |
 | `ops/revenue-tracker-worker/` | `szl-revenue-tracker` Worker: records only verified `PAYMENT-CONTEXT` authorizations and origin-reported settlements; no route by default |
+| [`scripts/x402_truth_envelope.py`](scripts/x402_truth_envelope.py) | Offline, strict two-axis commerce evidence envelope: exact partial-coverage conversion and atomic-value bounds, privacy-safe aggregates, explicit unresolved gates; never upgrades reported payments to verified revenue ([contract](docs/monetization/x402-truth-envelope.md)) |
 
 ## Honesty scope
 
