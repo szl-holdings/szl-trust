@@ -214,7 +214,7 @@ This repository holds the estate's two `PAYMENT-CONTEXT` validators for
 Cloudflare Monetization Gateway: `scripts/x402_payment_context.py` (Python)
 and `ops/evidence-snapshot-worker/src/payment-context.mjs` (Workers runtime).
 They share one contract and the vectors in
-`tests/vectors/x402-payment-context.v1.json`, which
+`tests/vectors/x402-payment-context.v2.json`, which
 `tools/x402_payment_context_vectors.py` generates from test-only keys. The
 validator in `governed-receipt-spec` (`science_evidence/payment.py`) is
 deprecated in favour of these.

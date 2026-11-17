@@ -60,7 +60,7 @@ the metadata version and deterministic digest change accordingly.
 Verification is delegated to `src/payment-context.mjs`, the Workers-runtime
 `PAYMENT-CONTEXT` validator. Its Python twin is `scripts/x402_payment_context.py`
 at the repository root. Both run the shared vectors in
-`tests/vectors/x402-payment-context.v1.json` (here: `test/vectors.test.mjs`)
+`tests/vectors/x402-payment-context.v2.json` (here: `test/vectors.test.mjs`)
 and must return the same decision and reason code for each one.
 
 The verifier accepts only EdDSA JWTs backed by **Ed25519** public keys from

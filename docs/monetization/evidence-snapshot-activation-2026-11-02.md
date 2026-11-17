@@ -50,7 +50,7 @@ The Worker, once offering is enabled, rejects any `PAYMENT-CONTEXT` whose
 signed amount is not exactly `1000000` (`AMOUNT_MISMATCH`), so a payment made
 under a cheaper rule cannot unlock it. Its validator and the Python validator
 share one contract and the conformance vectors in
-`tests/vectors/x402-payment-context.v1.json`.
+`tests/vectors/x402-payment-context.v2.json`.
 
 ## Recorded commercial scope (2026-11-02; host set 2026-11-12)
 

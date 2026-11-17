@@ -1,7 +1,7 @@
 // Canonical PAYMENT-CONTEXT validator for the Workers runtime.
 //
 // Python twin: scripts/x402_payment_context.py. Both must return the result
-// recorded for every vector in tests/vectors/x402-payment-context.v1.json
+// recorded for every vector in tests/vectors/x402-payment-context.v2.json
 // (test/vectors.test.mjs here, tests/test_x402_payment_context_vectors.py
 // there), so a rule change lands in both or the suites fail.
 //
