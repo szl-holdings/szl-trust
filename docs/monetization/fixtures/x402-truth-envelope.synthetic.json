@@ -1,0 +1,36 @@
+{
+  "schema": "szl.x402-truth-envelope/v1",
+  "source_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "provider_export_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "observed_at_utc": "2026-11-17T21:00:00Z",
+  "population_count": 4,
+  "unobserved_cap_atomic": 100,
+  "denomination": {
+    "network_caip2": "eip155:8453",
+    "asset_id": "erc20:0x833298a",
+    "asset_decimals": 6
+  },
+  "records": [
+    {
+      "request_hmac_sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "phase": "SETTLEMENT_REPORTED",
+      "authorized_cap_atomic": 100,
+      "reported_settlement_atomic": 30,
+      "provider_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "request_hmac_sha256": "0000000000000000000000000000000000000000000000000000000000000002",
+      "phase": "SETTLEMENT_PENDING",
+      "authorized_cap_atomic": 80,
+      "reported_settlement_atomic": null,
+      "provider_receipt_sha256": null
+    },
+    {
+      "request_hmac_sha256": "0000000000000000000000000000000000000000000000000000000000000003",
+      "phase": "FAILED",
+      "authorized_cap_atomic": 100,
+      "reported_settlement_atomic": null,
+      "provider_receipt_sha256": null
+    }
+  ]
+}
