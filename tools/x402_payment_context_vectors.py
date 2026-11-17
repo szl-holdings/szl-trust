@@ -10,6 +10,10 @@ validator (ops/evidence-snapshot-worker/src/payment-context.mjs) must both
 return each vector's ``result``. Expected results are written here by hand
 from the contract; they are not computed by either validator.
 
+This v2 document is for the Cloudflare PAYMENT-CONTEXT origin JWT on a
+separate trust boundary from x402 v2 PAYMENT-SIGNATURE and PAYMENT-REQUIRED.
+It neither verifies a wallet authorization nor proves settlement.
+
 Signing keys are derived from fixed public labels with SHA-256, so every run
 writes the same bytes (Ed25519 signatures are deterministic, RFC 8032). They
 are test keys only: not Cloudflare keys and not wallet keys. Claims, audiences
@@ -28,7 +32,8 @@ from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 ROOT = Path(__file__).resolve().parents[1]
-VECTOR_FILE = ROOT / "tests" / "vectors" / "x402-payment-context.v1.json"
+VECTOR_FILE = ROOT / "tests" / "vectors" / "x402-payment-context.v2.json"
+# Preserve the historical v1 TEST-ONLY seed: unchanged JWT fixtures retain byte identity.
 LABEL_PREFIX = b"szl-trust/x402-payment-context-vectors/v1/test-only-key/"
 
 AUD = "https://api.example.com/premium-data"
@@ -180,6 +185,24 @@ def build_vectors() -> list[dict]:
         vector("amount-below-minimum", sign(claims(amount="999")), no("AMOUNT_OUT_OF_BOUNDS")),
         vector("amount-above-maximum", sign(claims(amount="100000001")), no("AMOUNT_OUT_OF_BOUNDS")),
         vector("amount-very-long", sign(claims(amount="1" + "0" * 40)), no("AMOUNT_OUT_OF_BOUNDS")),
+        # HTTP x402 v2 to Cloudflare origin JWT boundary.
+        # These are deliberately NOT valid origin JWTs, even if a caller copies
+        # the v2 gateway challenge, client signature, or settlement headers.
+        vector("v2-client-payment-signature-not-origin-jwt",
+               _b64(_json_bytes({"x402Version": 2, "accepted": {"scheme": "exact"}, "payload": {}})),
+               no("MALFORMED_TOKEN"),
+               note="PAYMENT-SIGNATURE is client-to-gateway, not Cloudflare PAYMENT-CONTEXT"),
+        vector("v2-gateway-payment-required-not-origin-jwt",
+               _b64(_json_bytes({"x402Version": 2, "resource": {"url": AUD}, "accepts": []})),
+               no("MALFORMED_TOKEN"),
+               note="PAYMENT-REQUIRED is a gateway challenge, never origin authorization"),
+        vector("v2-payment-response-not-origin-jwt",
+               _b64(_json_bytes({"success": True, "transaction": "fixture-only"})),
+               no("MALFORMED_TOKEN"),
+               note="PAYMENT-RESPONSE is not a signed origin JWT or a proved settlement"),
+        vector("coalesced-duplicate-payment-context-headers",
+               good + ", " + good, no("MALFORMED_TOKEN"),
+               note="Two PAYMENT-CONTEXT headers joined by an HTTP stack must not admit"),
         # Time claims.
         vector("expired-at-leeway-boundary", good, no("EXPIRED"), now=EXP + 5),
         vector("expired-zero-leeway", good, no("EXPIRED"), now=EXP, leeway=0),
@@ -268,10 +291,23 @@ def build_vectors() -> list[dict]:
 
 def build_document() -> dict:
     return {
-        "schema": "szl.x402-payment-context-vectors.v1",
+        "schema": "szl.x402-payment-context-vectors.v2",
+        "transport": {
+            "x402_version": 2,
+            "transport": "http",
+            "gateway_challenge_header": "PAYMENT-REQUIRED",
+            "client_authorization_header": "PAYMENT-SIGNATURE",
+            "gateway_settlement_header": "PAYMENT-RESPONSE",
+            "origin_authorization_header": "PAYMENT-CONTEXT",
+            "origin_context_format": "Ed25519 JWT",
+            "scope": "gateway-origin-authorization-only; not payment verification or settlement",
+            "spec": "https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/http.md",
+            "origin_spec": "https://developers.cloudflare.com/monetization-gateway/configuration/payment-validation/",
+        },
         "generator": "tools/x402_payment_context_vectors.py",
-        "notice": ("Test-only Ed25519 keys derived from fixed labels; not Cloudflare keys, not wallet keys. "
-                   "Claims follow the examples on Cloudflare's Payment validation page (2026-09-30)."),
+        "notice": ("Test-only Ed25519 keys (historical v1 fixture seed); never Cloudflare or wallet keys. "
+                   "JWT claims follow Cloudflare origin-payment validation examples (2026-09-30). "
+                   "x402 v2 client/gateway headers are distinct from PAYMENT-CONTEXT; no settlement is proved."),
         "contract": {
             "default_leeway_seconds": 5,
             "max_leeway_seconds": 30,

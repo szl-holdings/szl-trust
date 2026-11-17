@@ -6,7 +6,7 @@
 
 This is the one Python implementation for the estate. Its Workers-runtime twin
 is ``ops/evidence-snapshot-worker/src/payment-context.mjs``. Both run the shared
-vectors in ``tests/vectors/x402-payment-context.v1.json`` and must return the
+vectors in ``tests/vectors/x402-payment-context.v2.json`` and must return the
 same decision and reason code for every vector. ``science_evidence/payment.py``
 in governed-receipt-spec is deprecated in favour of this module.
 

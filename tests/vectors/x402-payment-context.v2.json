@@ -1,7 +1,19 @@
 {
- "schema": "szl.x402-payment-context-vectors.v1",
+ "schema": "szl.x402-payment-context-vectors.v2",
+ "transport": {
+  "x402_version": 2,
+  "transport": "http",
+  "gateway_challenge_header": "PAYMENT-REQUIRED",
+  "client_authorization_header": "PAYMENT-SIGNATURE",
+  "gateway_settlement_header": "PAYMENT-RESPONSE",
+  "origin_authorization_header": "PAYMENT-CONTEXT",
+  "origin_context_format": "Ed25519 JWT",
+  "scope": "gateway-origin-authorization-only; not payment verification or settlement",
+  "spec": "https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/http.md",
+  "origin_spec": "https://developers.cloudflare.com/monetization-gateway/configuration/payment-validation/"
+ },
  "generator": "tools/x402_payment_context_vectors.py",
- "notice": "Test-only Ed25519 keys derived from fixed labels; not Cloudflare keys, not wallet keys. Claims follow the examples on Cloudflare's Payment validation page (2026-09-30).",
+ "notice": "Test-only Ed25519 keys (historical v1 fixture seed); never Cloudflare or wallet keys. JWT claims follow Cloudflare origin-payment validation examples (2026-09-30). x402 v2 client/gateway headers are distinct from PAYMENT-CONTEXT; no settlement is proved.",
  "contract": {
   "default_leeway_seconds": 5,
   "max_leeway_seconds": 30,
@@ -428,6 +440,66 @@
    "result": {
     "valid": false,
     "reason": "AMOUNT_OUT_OF_BOUNDS"
+   }
+  },
+  {
+   "name": "v2-client-payment-signature-not-origin-jwt",
+   "note": "PAYMENT-SIGNATURE is client-to-gateway, not Cloudflare PAYMENT-CONTEXT",
+   "token": "eyJ4NDAyVmVyc2lvbiI6MiwiYWNjZXB0ZWQiOnsic2NoZW1lIjoiZXhhY3QifSwicGF5bG9hZCI6e319",
+   "jwks": "primary",
+   "expected_audience": "https://api.example.com/premium-data",
+   "scheme": "exact",
+   "expected_amount": "25000",
+   "now": 1770000060,
+   "leeway": 5,
+   "result": {
+    "valid": false,
+    "reason": "MALFORMED_TOKEN"
+   }
+  },
+  {
+   "name": "v2-gateway-payment-required-not-origin-jwt",
+   "note": "PAYMENT-REQUIRED is a gateway challenge, never origin authorization",
+   "token": "eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20vcHJlbWl1bS1kYXRhIn0sImFjY2VwdHMiOltdfQ",
+   "jwks": "primary",
+   "expected_audience": "https://api.example.com/premium-data",
+   "scheme": "exact",
+   "expected_amount": "25000",
+   "now": 1770000060,
+   "leeway": 5,
+   "result": {
+    "valid": false,
+    "reason": "MALFORMED_TOKEN"
+   }
+  },
+  {
+   "name": "v2-payment-response-not-origin-jwt",
+   "note": "PAYMENT-RESPONSE is not a signed origin JWT or a proved settlement",
+   "token": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6ImZpeHR1cmUtb25seSJ9",
+   "jwks": "primary",
+   "expected_audience": "https://api.example.com/premium-data",
+   "scheme": "exact",
+   "expected_amount": "25000",
+   "now": 1770000060,
+   "leeway": 5,
+   "result": {
+    "valid": false,
+    "reason": "MALFORMED_TOKEN"
+   }
+  },
+  {
+   "name": "coalesced-duplicate-payment-context-headers",
+   "note": "Two PAYMENT-CONTEXT headers joined by an HTTP stack must not admit",
+   "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlY3Rvci1wcmltYXJ5IiwidHlwIjoiSldUIn0.eyJpYXQiOjE3NzAwMDAwMDAsIm5iZiI6MTc3MDAwMDAwMCwiZXhwIjoxNzcwMDAwMTIwLCJhdWQiOiJodHRwczovL2FwaS5leGFtcGxlLmNvbS9wcmVtaXVtLWRhdGEiLCJzY2hlbWUiOiJleGFjdCIsImFtb3VudCI6IjI1MDAwIn0.bK8jAkZNwNBiOMTqnEIiIJxSeRJXU5rqU2g6o0TCTsFJu0E7hiqPiPsSgN-o4dROdsmuGlSaz1-tr5eNHcTzCg, eyJhbGciOiJFZERTQSIsImtpZCI6InZlY3Rvci1wcmltYXJ5IiwidHlwIjoiSldUIn0.eyJpYXQiOjE3NzAwMDAwMDAsIm5iZiI6MTc3MDAwMDAwMCwiZXhwIjoxNzcwMDAwMTIwLCJhdWQiOiJodHRwczovL2FwaS5leGFtcGxlLmNvbS9wcmVtaXVtLWRhdGEiLCJzY2hlbWUiOiJleGFjdCIsImFtb3VudCI6IjI1MDAwIn0.bK8jAkZNwNBiOMTqnEIiIJxSeRJXU5rqU2g6o0TCTsFJu0E7hiqPiPsSgN-o4dROdsmuGlSaz1-tr5eNHcTzCg",
+   "jwks": "primary",
+   "expected_audience": "https://api.example.com/premium-data",
+   "scheme": "exact",
+   "expected_amount": "25000",
+   "now": 1770000060,
+   "leeway": 5,
+   "result": {
+    "valid": false,
+    "reason": "MALFORMED_TOKEN"
    }
   },
   {
