@@ -8,6 +8,6 @@
     "check": "npm test && npx --yes wrangler@4.128.0 deploy --dry-run"
   },
   "dependencies": {
-    "jose": "6.2.15"
+    "jose": "6.2.17"
   }
 }
