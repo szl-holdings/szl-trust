@@ -86,13 +86,23 @@ observer-relative `source_snapshot_age_seconds`, classified as:
 - More than five minutes in the future: `SOURCE_OBSERVATION_IN_FUTURE`
   hard HOLD before any source-reported amount is returned.
 
-`current_provider_state_verified` and
-`observed_at_verified_by_provider` always remain `false` in this
-v1 offline tool. Time-window classification has no authority to
-confirm a settlement, prove a revenue conversion, reconcile refunds or
-authorize payment initiation. A deterministic UTC reference clock may be
-passed to the Python API for synthetic tests; normal CLI execution uses
-the observing system's clock, which itself is not independently attested.
+`current_provider_state_verified`,
+`observed_at_verified_by_provider`, and
+`current_settlement_interval_independently_verified` always remain
+`false` in this v1 offline tool. `conditional_interval_scope` is
+`HISTORICAL_DECLARED_COHORT_ONLY` for stale reports and
+`SOURCE_DECLARED_COHORT_ONLY` otherwise. The exact input-field
+allowlist rejects untrusted provider-controlled claims such as
+`current_readback=true` and `settled_independently_verified=true`.
+
+Time-window classification has no authority to confirm a settlement,
+prove a revenue conversion, reconcile refunds or authorize payment
+initiation. A deterministic UTC reference clock may be passed to the
+Python API for synthetic tests; normal CLI execution uses the observing
+system's clock, which itself is not independently attested. Historical
+conditional intervals remain nonzero when the supplied records contain
+source-reported amounts; their presence never upgrades revenue from
+`null` or supplies a contemporary payment/settlement claim.
 
 ## Interval law (conservative, exact integer arithmetic)
 
