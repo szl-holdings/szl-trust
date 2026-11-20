@@ -240,6 +240,12 @@ class TruthEnvelopeTests(unittest.TestCase):
         self.assertFalse(observed["source_snapshot_stale_for_current_claims"])
         self.assertFalse(observed["current_provider_state_verified"])
         self.assertFalse(observed["observed_at_verified_by_provider"])
+        self.assertEqual(
+            observed["conditional_interval_scope"], "SOURCE_DECLARED_COHORT_ONLY"
+        )
+        self.assertFalse(
+            observed["current_settlement_interval_independently_verified"]
+        )
         self.assertIsNone(observed["financial_revenue_verified_atomic"])
 
     def test_historical_provider_report_remains_conditional_not_current(self):
@@ -258,7 +264,19 @@ class TruthEnvelopeTests(unittest.TestCase):
             old["next_evidence_gates"],
         )
         self.assertEqual(old["source_reported_settlement_atomic"], 30)
+        self.assertEqual(
+            old["conditional_interval_scope"], "HISTORICAL_DECLARED_COHORT_ONLY"
+        )
+        self.assertFalse(old["current_settlement_interval_independently_verified"])
         self.assertIsNone(old["financial_revenue_verified_atomic"])
+
+    def test_provider_cannot_self_certify_current_readback(self):
+        snap = batch()
+        snap["current_readback"] = True
+        self.assert_hold(snap, "UNKNOWN_OR_MISSING_TOP_LEVEL_FIELD")
+        snap = batch()
+        snap["records"][0]["settled_independently_verified"] = True
+        self.assert_hold(snap, "UNKNOWN_OR_MISSING_RECORD_FIELD")
 
     def test_strict_observation_age_at_24_hour_boundary(self):
         snap = batch()
