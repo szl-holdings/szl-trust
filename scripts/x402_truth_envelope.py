@@ -276,6 +276,12 @@ def envelope(raw: bytes, *, reference_time=None) -> dict:
         "denomination_as_declared": data["denomination"],
         "input_sha256": hashlib.sha256(raw).hexdigest(),
         "validation": "STRUCTURAL_ONLY_NOT_PROVIDER_OR_CHAIN_VERIFIED",
+        "conditional_interval_scope": (
+            "HISTORICAL_DECLARED_COHORT_ONLY"
+            if source_time["source_snapshot_stale_for_current_claims"]
+            else "SOURCE_DECLARED_COHORT_ONLY"
+        ),
+        "current_settlement_interval_independently_verified": False,
         "financial_revenue_verified_atomic": None,
         "production_qualified": False,
         "observed_request_count": observed,
