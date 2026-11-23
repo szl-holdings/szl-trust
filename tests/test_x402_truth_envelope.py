@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import random
 import subprocess
@@ -223,6 +224,105 @@ class TruthEnvelopeTests(unittest.TestCase):
             snap["observed_at_utc"] = stamp
             with self.subTest(stamp=stamp):
                 self.assert_hold(snap, "UTC_TIMESTAMP_REQUIRED")
+
+    def test_recent_declared_timestamp_never_authenticates_settlement(self):
+        snap = batch()
+        snap["observed_at_utc"] = "2026-11-20T20:59:55Z"
+        observed = envelope(
+            json.dumps(snap).encode(),
+            reference_time=dt.datetime(2026, 11, 20, 21, 0, tzinfo=dt.timezone.utc),
+        )
+        self.assertEqual(observed["source_snapshot_age_seconds"], 5)
+        self.assertEqual(
+            observed["source_snapshot_temporal_state"],
+            "RECENT_TIMESTAMP_ONLY_NOT_AUTHENTICATED",
+        )
+        self.assertFalse(observed["source_snapshot_stale_for_current_claims"])
+        self.assertFalse(observed["current_provider_state_verified"])
+        self.assertFalse(observed["observed_at_verified_by_provider"])
+        self.assertEqual(
+            observed["conditional_interval_scope"], "SOURCE_DECLARED_COHORT_ONLY"
+        )
+        self.assertFalse(
+            observed["current_settlement_interval_independently_verified"]
+        )
+        self.assertIsNone(observed["financial_revenue_verified_atomic"])
+
+    def test_historical_provider_report_remains_conditional_not_current(self):
+        snap = batch()  # exact synthetic source cutoff: 2026-11-17T21:00:00Z
+        old = envelope(
+            json.dumps(snap).encode(),
+            reference_time=dt.datetime(2026, 11, 20, 21, 0, tzinfo=dt.timezone.utc),
+        )
+        self.assertEqual(old["source_snapshot_age_seconds"], 3 * 24 * 60 * 60)
+        self.assertTrue(old["source_snapshot_stale_for_current_claims"])
+        self.assertEqual(
+            old["source_snapshot_temporal_state"], "HISTORICAL_SOURCE_TIMESTAMP"
+        )
+        self.assertIn(
+            "HISTORICAL_SOURCE_EXPORT_REQUIRES_CURRENT_READBACK",
+            old["next_evidence_gates"],
+        )
+        self.assertEqual(old["source_reported_settlement_atomic"], 30)
+        self.assertEqual(
+            old["conditional_interval_scope"], "HISTORICAL_DECLARED_COHORT_ONLY"
+        )
+        self.assertFalse(old["current_settlement_interval_independently_verified"])
+        self.assertIsNone(old["financial_revenue_verified_atomic"])
+
+    def test_provider_cannot_self_certify_current_readback(self):
+        snap = batch()
+        snap["current_readback"] = True
+        self.assert_hold(snap, "UNKNOWN_OR_MISSING_TOP_LEVEL_FIELD")
+        snap = batch()
+        snap["records"][0]["settled_independently_verified"] = True
+        self.assert_hold(snap, "UNKNOWN_OR_MISSING_RECORD_FIELD")
+
+    def test_strict_observation_age_at_24_hour_boundary(self):
+        snap = batch()
+        now = dt.datetime(2026, 11, 20, 21, 0, tzinfo=dt.timezone.utc)
+        snap["observed_at_utc"] = "2026-11-19T21:00:00Z"
+        on_boundary = envelope(json.dumps(snap).encode(), reference_time=now)
+        self.assertFalse(on_boundary["source_snapshot_stale_for_current_claims"])
+        snap["observed_at_utc"] = "2026-11-19T20:59:59Z"
+        after_boundary = envelope(json.dumps(snap).encode(), reference_time=now)
+        self.assertTrue(after_boundary["source_snapshot_stale_for_current_claims"])
+
+    def test_future_dated_source_export_refused_before_amount_claims(self):
+        snap = batch()
+        snap["observed_at_utc"] = "2026-11-20T21:05:01Z"
+        with self.assertRaisesRegex(EnvelopeHold, "SOURCE_OBSERVATION_IN_FUTURE"):
+            envelope(
+                json.dumps(snap).encode(),
+                reference_time=dt.datetime(
+                    2026, 11, 20, 21, 0, tzinfo=dt.timezone.utc
+                ),
+            )
+
+    def test_five_minute_clock_skew_is_not_admitted_as_fresh_truth(self):
+        snap = batch()
+        snap["observed_at_utc"] = "2026-11-20T21:04:59Z"
+        value = envelope(
+            json.dumps(snap).encode(),
+            reference_time=dt.datetime(2026, 11, 20, 21, 0, tzinfo=dt.timezone.utc),
+        )
+        self.assertEqual(value["source_snapshot_age_seconds"], 0)
+        self.assertEqual(
+            value["source_snapshot_temporal_state"],
+            "CLOCK_SKEW_TOLERATED_NOT_AUTHENTICATED",
+        )
+        self.assertIn(
+            "SOURCE_CLOCK_SKEW_NOT_INDEPENDENTLY_VERIFIED",
+            value["next_evidence_gates"],
+        )
+        self.assertFalse(value["current_provider_state_verified"])
+
+    def test_naive_observer_clock_is_not_an_authority(self):
+        with self.assertRaisesRegex(EnvelopeHold, "OBSERVER_CLOCK_UNAVAILABLE"):
+            envelope(
+                json.dumps(batch()).encode(),
+                reference_time=dt.datetime(2026, 11, 20, 21, 0),
+            )
 
     def test_rejects_bad_schema_and_phase(self):
         snap = batch()

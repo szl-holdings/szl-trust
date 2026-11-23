@@ -73,6 +73,8 @@ MAX_INPUT_BYTES = 2_000_000
 MAX_RECORDS = 20_000
 MAX_POPULATION = 100_000_000
 MAX_ATOMIC = 10**18
+RECENT_SOURCE_AGE_SECONDS = 24 * 60 * 60
+MAX_CLOCK_SKEW_SECONDS = 5 * 60
 
 
 class EnvelopeHold(ValueError):
@@ -106,6 +108,40 @@ def _parse_utc(value):
     if result.utcoffset() != dt.timedelta(0):
         raise EnvelopeHold("UTC_TIMESTAMP_REQUIRED")
     return result
+
+
+def _source_observation_time(observed_at_utc, reference_time=None):
+    """Classify the *declared* timestamp; never authenticate the provider.
+
+    Historical evidence remains usable for offline conditional mathematics,
+    but must never be represented as a fresh payment or a current receipt.
+    An observation farther than the allowed UTC clock skew into the future
+    fails closed before source-reported settlement counts are returned.
+    """
+    observed = _parse_utc(observed_at_utc)
+    now = dt.datetime.now(dt.timezone.utc) if reference_time is None else reference_time
+    if not isinstance(now, dt.datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise EnvelopeHold("OBSERVER_CLOCK_UNAVAILABLE")
+    difference = (
+        now.astimezone(dt.timezone.utc) - observed.astimezone(dt.timezone.utc)
+    ).total_seconds()
+    if difference < -MAX_CLOCK_SKEW_SECONDS:
+        raise EnvelopeHold("SOURCE_OBSERVATION_IN_FUTURE")
+
+    historical = difference > RECENT_SOURCE_AGE_SECONDS
+    if difference < 0:
+        state = "CLOCK_SKEW_TOLERATED_NOT_AUTHENTICATED"
+    elif historical:
+        state = "HISTORICAL_SOURCE_TIMESTAMP"
+    else:
+        state = "RECENT_TIMESTAMP_ONLY_NOT_AUTHENTICATED"
+    return {
+        "source_snapshot_temporal_state": state,
+        "source_snapshot_age_seconds": max(0, int(difference)),
+        "source_snapshot_stale_for_current_claims": historical,
+        "current_provider_state_verified": False,
+        "observed_at_verified_by_provider": False,
+    }
 
 
 def _ratio(numerator: int, denominator: int) -> str | None:
@@ -184,8 +220,11 @@ def _decode(raw: bytes):
     return decoded
 
 
-def envelope(raw: bytes) -> dict:
+def envelope(raw: bytes, *, reference_time=None) -> dict:
     data = _decode(raw)
+    source_time = _source_observation_time(
+        data["observed_at_utc"], reference_time=reference_time
+    )
     rows = data["records"]
     observed = len(rows)
     population = data["population_count"]
@@ -222,6 +261,10 @@ def envelope(raw: bytes) -> dict:
         reasons.append("INCOMPLETE_COHORT_COVERAGE")
     if upper_atomic is None:
         reasons.append("POTENTIAL_REVENUE_UPPER_UNAVAILABLE")
+    if source_time["source_snapshot_stale_for_current_claims"]:
+        reasons.append("HISTORICAL_SOURCE_EXPORT_REQUIRES_CURRENT_READBACK")
+    if source_time["source_snapshot_temporal_state"] == "CLOCK_SKEW_TOLERATED_NOT_AUTHENTICATED":
+        reasons.append("SOURCE_CLOCK_SKEW_NOT_INDEPENDENTLY_VERIFIED")
     if by_phase["DISPUTED"] or by_phase["REFUNDED"]:
         reasons.append("NET_REFUND_AND_DISPUTE_ACCOUNTING_UNVERIFIED")
     return {
@@ -229,9 +272,16 @@ def envelope(raw: bytes) -> dict:
         "observed_at_utc": data["observed_at_utc"],
         "source_revision": data["source_revision"],
         "provider_export_sha256": data["provider_export_sha256"],
+        **source_time,
         "denomination_as_declared": data["denomination"],
         "input_sha256": hashlib.sha256(raw).hexdigest(),
         "validation": "STRUCTURAL_ONLY_NOT_PROVIDER_OR_CHAIN_VERIFIED",
+        "conditional_interval_scope": (
+            "HISTORICAL_DECLARED_COHORT_ONLY"
+            if source_time["source_snapshot_stale_for_current_claims"]
+            else "SOURCE_DECLARED_COHORT_ONLY"
+        ),
+        "current_settlement_interval_independently_verified": False,
         "financial_revenue_verified_atomic": None,
         "production_qualified": False,
         "observed_request_count": observed,
