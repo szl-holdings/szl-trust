@@ -48,7 +48,7 @@ The strictly admitted top-level fields are:
 | `schema` | Exactly `szl.x402-truth-envelope/v1` |
 | `source_revision` | Full immutable 40/64-hex Git SHA supplied by operator; not authenticated by this tool |
 | `provider_export_sha256` | Raw provider-export digest (64 lowercase hex); bytes and signature must be validated outside |
-| `observed_at_utc` | Source observation cutoff, explicit `Z` |
+| `observed_at_utc` | Source-declared observation cutoff, explicit `Z`; does not prove a live or authenticated export |
 | `population_count` | Declared count of distinct cohort requests (integer or `null` if unknown) |
 | `unobserved_cap_atomic` | Known per-request maximum for unobserved requests (integer or `null` if unknown) |
 | `denomination` | Exactly `network_caip2`, `asset_id`, `asset_decimals`. A single declared network/asset per cohort; no cross-asset summation or automatic fiat conversion. |
@@ -65,6 +65,44 @@ Phases: `CHALLENGED`, `AUTHORIZED`, `PRODUCED`,
 `REFUNDED`, `FAILED`, `CANCELLED`. The tool does not assert that
 missing earlier phases occurred or that a state machine transition was valid.
 Those require event-level provenance and the governed ledger.
+
+## Source snapshot clock and freshness boundary
+
+A structurally valid, signed-looking digest is **not** evidence that the
+Cloudflare, facilitator or on-chain state is current. The offline result
+includes the source-declared `observed_at_utc` and an explicitly
+observer-relative `source_snapshot_age_seconds`, classified as:
+
+- `RECENT_TIMESTAMP_ONLY_NOT_AUTHENTICATED`: timestamp no more than
+  24 hours before the observing clock. No provider signature, payment
+  finality, or production status is conferred.
+- `HISTORICAL_SOURCE_TIMESTAMP`: more than 24 hours old. Conditional
+  arithmetic remains available for retrospective analysis, but the report
+  adds `HISTORICAL_SOURCE_EXPORT_REQUIRES_CURRENT_READBACK` and marks
+  `source_snapshot_stale_for_current_claims=true`.
+- `CLOCK_SKEW_TOLERATED_NOT_AUTHENTICATED`: supplied observation is
+  ahead of the observing clock by at most five minutes. The clock-skew
+  condition is explicit; it is **not** a freshness pass.
+- More than five minutes in the future: `SOURCE_OBSERVATION_IN_FUTURE`
+  hard HOLD before any source-reported amount is returned.
+
+`current_provider_state_verified`,
+`observed_at_verified_by_provider`, and
+`current_settlement_interval_independently_verified` always remain
+`false` in this v1 offline tool. `conditional_interval_scope` is
+`HISTORICAL_DECLARED_COHORT_ONLY` for stale reports and
+`SOURCE_DECLARED_COHORT_ONLY` otherwise. The exact input-field
+allowlist rejects untrusted provider-controlled claims such as
+`current_readback=true` and `settled_independently_verified=true`.
+
+Time-window classification has no authority to confirm a settlement,
+prove a revenue conversion, reconcile refunds or authorize payment
+initiation. A deterministic UTC reference clock may be passed to the
+Python API for synthetic tests; normal CLI execution uses the observing
+system's clock, which itself is not independently attested. Historical
+conditional intervals remain nonzero when the supplied records contain
+source-reported amounts; their presence never upgrades revenue from
+`null` or supplies a contemporary payment/settlement claim.
 
 ## Interval law (conservative, exact integer arithmetic)
 
@@ -140,5 +178,5 @@ client, billing writer, Cloudflare route or public revenue claim.
 - https://developers.cloudflare.com/monetization-gateway/x402/
 - https://developers.cloudflare.com/monetization-gateway/
 
-Last reviewed: November 17, 2026. Protocol changes require a new reviewed
+Last reviewed: November 20, 2026. Protocol changes require a new reviewed
 contract and negative tests, not silently weakening an admission rule.
